@@ -45,14 +45,22 @@
 
 
 
-.card {
-   transition: .2s !important;
-   opacity: .8;
-   scale: .975;
-   background: linear-gradient(80deg,rgba(255, 255, 255, 1) 75%, var(--accent-color) 75%) !important; 
-   border-radius: 0px !important;
-   box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 5px !important;
-}
+ .card {
+   background: #ffffff;
+   border-radius: 20px;
+   padding: 1.5rem 1rem;
+   width: 160px;
+   cursor: pointer;
+   transition: 0.3s ease;
+   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+   opacity: 1;
+   scale: 1;
+   border: 2px solid transparent;
+ }
+ 
+ .card.selected {
+   border: 2px solid #860038; 
+ }
 
 .card:hover {
    opacity: 1;

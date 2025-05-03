@@ -1,0 +1,130 @@
+.community-page-wrapper {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+  }
+  
+  .community-heading {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+  
+  .highlight {
+    color: #b00050;
+    font-weight: bold;
+  }
+  
+  .testimonial-card {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 2rem;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    text-align: left;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+  
+  .testimonial-left {
+    max-width: 200px;
+    flex-shrink: 0;
+  }
+  
+  .testimonial-right {
+    flex: 1;
+  }
+  
+  .initial-circle {
+    background: #f6e8ec;
+    color: #860038;
+    border-radius: 50%;
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .initial-circle.small {
+    width: 48px;
+    height: 48px;
+    font-size: 1.5rem;
+  }
+  
+  .name {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .major {
+    font-size: 0.9rem;
+    color: #777;
+    margin-bottom: 0.25rem;
+  }
+  
+  .university {
+    font-size: 0.9rem;
+    color: #860038;
+    font-weight: 500;
+  }
+  
+  .quote {
+    font-style: italic;
+    color: #555;
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+  
+  .dots {
+    margin-top: 1rem;
+  }
+  
+  .dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin: 0 4px;
+    border-radius: 50%;
+    background-color: #ccc;
+    cursor: pointer;
+  }
+  
+  .dot.active {
+    background-color: #b00050;
+  }
+  
+  .card-list {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .card {
+    background-color: #f9f9f9;
+    padding: 1rem;
+    width: 160px;
+    border-radius: 1rem;
+    transition: 0.2s ease;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  .card:hover {
+    transform: translateY(-4px);
+  }
+  
+  .card.selected {
+    border: 2px solid #b00050;
+    background-color: #fff;
+  }
+  
