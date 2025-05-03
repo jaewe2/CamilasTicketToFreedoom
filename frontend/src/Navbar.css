@@ -1,70 +1,30 @@
-nav {
-    position:sticky;
-    top: 0;
-    background-color: #000 !important;
-    z-index: 1;
-    border: none !important
-    ;
-}
-
-nav a {
-    color: #fff !important;
-    font-weight: lighter !important;
-    height: 30px;
-}
-
-nav span {
-    color: #bbb !important;
-
-}
-
-nav a:hover {
-    color: #fff !important;
-    text-decoration: underline !important;
-    font-weight: lighter !important;
-}
-
-nav input {
-    border-radius: 0px !important;
-    background-color: #333;
-    border: none !important;
-    color: #ddd;
-    min-width: 0px !important;
-    padding: 6px 0 !important;
-    width: 0px !important;
-    transition: .2s;
-}
-
-nav form > * {
-    margin: 0 !important;
-}
-
-nav form:hover > input, nav form:active > input, nav form:focus > input, input:active, input:focus  {
-    padding: 6px 6px !important;
-    min-width: 180px !important;
-
-}
-
-nav button {
-    background: var(--accent-color) !important;
-    transition: .2s;
-}
-
-
-nav button:hover {
-    background: color-mix(in srgb, var(--accent-color), #000 20%) !important;
-}
-
-nav > * {
-   flex:1;
-}
-
-nav form {
+/* src/Navbar.css */
+.navbar {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-}
-
-nav > *:nth-child(3){
-    justify-content: flex-end;
-}
+    padding: 16px 32px;
+    background: #fce4ec; /* light pink */
+    font-family: 'Segoe UI', sans-serif;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .navbar-logo a {
+    color: #880e4f; /* bold maroon/red */
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-decoration: none;
+  }
+  
+  .navbar-links a {
+    margin-left: 24px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    font-size: 1rem;
+  }
+  
+  .navbar-links a:hover {
+    text-decoration: underline;
+  }
+  

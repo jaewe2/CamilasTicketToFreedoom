@@ -23,6 +23,8 @@ pip install channels
 
 pip install channels_redis
 
+pip install stripe
+
 
 To start frontend:
 npm start 

@@ -20,6 +20,10 @@ import StripeSuccessPage from "./StripeSuccessPage";
 import PrivateRoute from "./PrivateRoute";
 import Navbar from "./Navbar";
 import Notifications from "./components/Notifications";
+import Community from './pages/Community';
+import Events from './pages/Events';
+import Features from './pages/Features';
+import Resources from './pages/Resources';
 
 // 🗂 Listings
 import ListingsPage from "./Listings/ListingsPage";
@@ -52,6 +56,13 @@ export default function App() {
           <Route path="/listings" element={<ListingsPage />} />
           <Route path="/listing-detail/:id" element={<ListingDetail />} />
           <Route path="/order-confirmation/success" element={<StripeSuccessPage />} />
+
+          {/* NavBar Routes */}
+          <Route path="/community" element={<Community />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/features" element={<Features />} />
+          <Route path="/resources" element={<Resources />} />
+
 
           {/* Protected routes */}
           <Route
