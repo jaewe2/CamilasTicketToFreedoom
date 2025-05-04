@@ -48,17 +48,17 @@
 }
 
 .custom-toast-success {
-  border-left-color: #28a745;
-  background-color: #e9f8ef;
+  border-left-color: var(--highlight-yellow);
+  background-color: #fff8e5;
 }
 
 .custom-toast-error {
-  border-left-color: #dc3545;
-  background-color: #fbe9e9;
+  border-left-color: var(--accent-color);
+  background-color: #fde5e5;
 }
 
 .custom-toast .Toastify__progress-bar {
-  background: #007bff;
+  background: var(--accent-color);
 }
 
 @keyframes spin {
@@ -69,12 +69,14 @@
 /* */
 
 :root {
-  --accent-color: #8940ff;
-  --accent-color-t: #751fff22;
+  --accent-color: #860038;       /* Burgundy */
+  --accent-color-t: #86003822;   /* Transparent version */
   --accent-color-2-t: #ffffff11;
   --border-size: 20px;
-  --bg-dark-1: #fff;
-  --bg-dark-2: #f9f9f9;
+  --bg-dark-1: #ffffff;          /* Keep white for card backgrounds */
+  --bg-dark-2: #f9f9f9;          /* Light grey for subtle backgrounds */
+  --highlight-yellow: #EFBA08;   /* Optional secondary accent */
+  --neutral-grey: #75787B;       /* For text or muted backgrounds */
 }
 
 #root{
@@ -82,9 +84,14 @@
   min-height: 100vh !important;
   position: absolute;
   top: 0;
-  background: linear-gradient(0deg,var(--accent-color) 0%, #fff 100%),      linear-gradient(135deg,#0000 20%, var(--bg-dark-2) 20% 30%,#0000 0),
-  repeating-linear-gradient(45deg, var(--bg-dark-2) 20% 30%,var(--bg-dark-1) 0 70%), repeating-linear-gradient(45deg, var(--bg-dark-2) 20% 30%,var(--bg-dark-1) 0 70%); 
-  background-size: contain,  30px 30px,  30px 30px;
+
+  background: 
+    linear-gradient(0deg, var(--accent-color) 0%, #fff 100%),      
+    linear-gradient(135deg, #0000 20%, var(--bg-dark-2) 20% 30%, #0000 0),
+    repeating-linear-gradient(45deg, var(--bg-dark-2) 20% 30%, var(--bg-dark-1) 0 70%),
+    repeating-linear-gradient(45deg, var(--bg-dark-2) 20% 30%, var(--bg-dark-1) 0 70%);
+
+  background-size: contain, 30px 30px, 30px 30px;
   background-blend-mode: overlay, normal, normal;
 }
 
