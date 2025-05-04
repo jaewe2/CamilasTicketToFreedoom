@@ -1,3 +1,5 @@
+# api/models.py
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
@@ -8,6 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
 
 # 🔐 Custom User Model
 class CommunityUser(AbstractUser):
@@ -38,6 +41,7 @@ class CommunityUser(AbstractUser):
 # 📂 Category
 class Category(models.Model):
     name = models.CharField(max_length=100)
+
     def __str__(self):
         return self.name
 
@@ -46,6 +50,7 @@ class Category(models.Model):
 class PaymentMethod(models.Model):
     name = models.CharField(max_length=50, unique=True)
     icon = models.URLField(blank=True, null=True)
+
     def __str__(self):
         return self.name
 
@@ -55,6 +60,7 @@ class Offering(models.Model):
     name        = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     extra_cost  = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+
     def __str__(self):
         return f"{self.name} (+${self.extra_cost})"
 
@@ -70,6 +76,7 @@ class CommunityPosting(models.Model):
     created_at      = models.DateTimeField(auto_now_add=True)
     payment_methods = models.ManyToManyField(PaymentMethod, blank=True, related_name="postings")
     offerings       = models.ManyToManyField(Offering, blank=True, related_name="postings")
+
     def __str__(self):
         return self.title
 
@@ -79,6 +86,7 @@ class PostingImage(models.Model):
     posting     = models.ForeignKey(CommunityPosting, on_delete=models.CASCADE, related_name="images")
     image       = models.ImageField(upload_to="posting_images/")
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
         return f"Image for {self.posting.title}"
 
@@ -99,6 +107,7 @@ class Favorite(models.Model):
 # 🔖 Tags
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
+
     def __str__(self):
         return self.name
 
@@ -157,7 +166,7 @@ class Order(models.Model):
         return f"Order #{self.id} by {self.buyer.username} ({self.status})"
 
 
-# 📅 Assessment Reminder (with soft delete and status tracking)
+# 📅 Assessment Reminder
 class Reminder(models.Model):
     STATUS_PENDING   = "PENDING"
     STATUS_COMPLETED = "COMPLETED"
@@ -177,7 +186,7 @@ class Reminder(models.Model):
     is_deleted  = models.BooleanField(default=False)
     status      = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
     created_at  = models.DateTimeField(auto_now_add=True)
-    updated_at  = models.DateTimeField(auto_now=True)  # ✅ NEW FIELD
+    updated_at  = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["due_date"]
@@ -228,3 +237,23 @@ def notify_on_order(sender, instance, created, **kwargs):
         verb="purchased your listing",
         target=instance
     )
+
+
+# ─── Resource Sharing Model ───────────────────────────────────────────────────
+
+class Resource(models.Model):
+    """
+    A user-uploaded study resource (notes, files, etc.) for sharing.
+    """
+    owner       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="resources")
+    title       = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    file        = models.FileField(upload_to="resources/")
+    created_at  = models.DateTimeField(auto_now_add=True)
+    updated_at  = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.title} by {self.owner}"

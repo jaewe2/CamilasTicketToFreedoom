@@ -24,6 +24,7 @@ from .views import (
     UserSalesByCategoryView,
     UserNotificationsView,
     ReminderViewSet,
+    ResourceViewSet,  # ← new resource sharing endpoint
 )
 
 router = DefaultRouter()
@@ -36,7 +37,8 @@ router.register(r'messages', MessageViewSet, basename='messages')
 router.register(r'payment-methods', PaymentMethodViewSet, basename='payment-methods')
 router.register(r'offerings', OfferingViewSet, basename='offerings')
 router.register(r'orders', OrderViewSet, basename='orders')
-router.register(r'reminders', ReminderViewSet, basename='reminders')  # ← new reminders endpoint
+router.register(r'reminders', ReminderViewSet, basename='reminders')
+router.register(r'resources', ResourceViewSet, basename='resources')  # ← new
 
 urlpatterns = [
     # DRF router: standard CRUD + @action endpoints
