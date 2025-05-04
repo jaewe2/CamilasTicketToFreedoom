@@ -26,6 +26,7 @@ export default function Register() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const token = await userCredential.user.getIdToken();
+      localStorage.setItem("token", token);
 
       const response = await fetch("http://127.0.0.1:8000/api/verify-token/", {
         method: "POST",

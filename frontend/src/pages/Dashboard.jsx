@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import "./Dashboard.css";
-
+// after signing up, the user will be redirected to this page
 
 const LandingPage = () => {
   const [categories, setCategories] = useState([]);

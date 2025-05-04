@@ -15,6 +15,7 @@ from .models import (
     Offering,
     Order,
     Notification,        # ← newly added
+    Event,
 )
 
 User = get_user_model()
@@ -288,3 +289,12 @@ class NotificationSerializer(serializers.ModelSerializer):
 
     def get_target_type(self, obj):
         return obj.target_content_type.model if obj.target_content_type else None
+    
+# events serializer
+
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = '__all__'
+        read_only_fields = ['creator', 'created_at']
+

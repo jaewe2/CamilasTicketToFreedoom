@@ -1,28 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Events.css';
-
-const events = [
-  {
-    id: 1,
-    title: 'Annual Student Conference',
-    date: 'May 14, 2025',
-    location: 'Main Campus Auditorium',
-  },
-  {
-    id: 2,
-    title: 'Tech Workshop Series',
-    date: 'May 14, 2025',
-    location: 'Innovation Center, Building B',
-  },
-  {
-    id: 3,
-    title: 'Career Development Day',
-    date: 'May 09, 2025',
-    location: 'Student Center, Room 201',
-  },
-];
+//import AddEventForm from "../components/AddEventForm";
+import { auth } from "../firebase";
 
 const Events = () => {
+  const [events, setEvents] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/api/events/")
+      .then(res => res.json())
+      .then(data => setEvents(data))
+      .catch(err => console.error("Failed to load events:", err));
+  }, []);
+
   return (
     <div className="events-container">
       <h1 className="events-title">Upcoming Events</h1>
@@ -30,22 +22,28 @@ const Events = () => {
         Stay connected with the latest campus activities and educational opportunities
       </p>
       <div className="events-button-wrapper">
-        <button className="events-add-btn">Add Event</button>
+        {auth.currentUser && (
+          <button className="events-add-btn" onClick={() => navigate('/events/new')}>
+            Add Event
+          </button>
+        )}
       </div>
 
       <div className="events-grid">
         {events.map((event) => (
           <div key={event.id} className="events-card">
+            {event.image && (
+              <img src={event.image} alt={event.title} className="events-image" />
+            )}
             <div className="events-info">
               <h3 className="events-name">{event.title}</h3>
-              <p className="events-date">
-                📅 {event.date}
-              </p>
-              <p className="events-location">
-                📍 {event.location}
-              </p>
+              <p className="events-date">📅 {event.date}</p>
+              <p className="events-location">📍 {event.location}</p>
+              <p className="events-description">{event.description}</p>
             </div>
-            <button className="events-view-btn">View Details</button>
+            <button className="events-view-btn" onClick={() => navigate(`/events/${event.id}`)}>
+              View Details
+            </button>
           </div>
         ))}
       </div>

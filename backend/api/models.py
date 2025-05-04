@@ -254,3 +254,22 @@ def notify_on_order(sender, instance, created, **kwargs):
         verb="purchased your listing",
         target=instance
     )
+
+# Events 
+
+class Event(models.Model):
+    creator = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE,
+        related_name="events"
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    image = models.ImageField(upload_to="event_images/", null=True, blank=True)
+    date = models.DateField()
+    time = models.TimeField()
+    location = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title

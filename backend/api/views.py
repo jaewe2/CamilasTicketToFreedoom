@@ -31,6 +31,7 @@ from .models import (
     PaymentMethod,
     Offering,
     Order,
+    Event,
 )
 from .serializers import (
     CommunityPostingSerializer,
@@ -47,6 +48,7 @@ from .serializers import (
     OverviewSerializer,
     MonthCountSerializer,
     CategoryValueSerializer,
+    EventSerializer,
 )
 
 User = get_user_model()
@@ -577,3 +579,11 @@ class UserNotificationsView(APIView):
             "unreadMessages": unread_messages,
             "newOrdersToday": new_orders_today,
         })
+
+class EventViewSet(viewsets.ModelViewSet):
+    queryset = Event.objects.all().order_by('-created_at')
+    serializer_class = EventSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(creator=self.request.user)

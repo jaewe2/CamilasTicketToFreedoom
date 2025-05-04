@@ -32,6 +32,7 @@ export default function Login() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
       const token = await userCredential.user.getIdToken();
+      localStorage.setItem("token", token);
 
       const response = await fetch("http://127.0.0.1:8000/api/verify-token/", {
         method: "POST",
@@ -42,6 +43,7 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
+        localStorage.setItem("user_id", data.id);
         toast.success(`Welcome, ${data.email}`, {
           className: "custom-toast custom-toast-success",
           icon: "✅",

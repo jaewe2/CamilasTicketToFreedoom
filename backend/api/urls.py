@@ -24,6 +24,7 @@ from .views import (
     UserSalesByMonthView,
     UserSalesByCategoryView,
     UserNotificationsView,
+    EventViewSet,
 )
 
 router = DefaultRouter()
@@ -36,6 +37,7 @@ router.register(r'messages', MessageViewSet, basename='messages')
 router.register(r'payment-methods', PaymentMethodViewSet, basename='payment-methods')
 router.register(r'offerings', OfferingViewSet, basename='offerings')
 router.register(r'orders', OrderViewSet, basename='orders')
+router.register(r'events', EventViewSet, basename='event')
 
 urlpatterns = [
     # DRF router: standard CRUD + @action endpoints
@@ -71,6 +73,10 @@ urlpatterns = [
     path('analytics/user/sales-by-month/', UserSalesByMonthView.as_view(), name='analytics-user-sales-by-month'),
     path('analytics/user/sales-by-category/', UserSalesByCategoryView.as_view(), name='analytics-user-sales-by-category'),
     path('analytics/user/notifications/', UserNotificationsView.as_view(), name='analytics-user-notifications'),
+
+    # Events
+    path('', include(router.urls)),
+
 ]
 
 # (Optional) WebSocket routes if using real-time messaging

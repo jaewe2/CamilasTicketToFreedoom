@@ -3,6 +3,9 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import ViewEvent from "./pages/ViewEvent";
+import EditEventForm from "./components/EditEventForm";
+
 
 // 🔧 Pages & Components
 import Login from "./Auth/Login";
@@ -25,6 +28,7 @@ import Events from './pages/Events';
 import Features from './pages/Features';
 import Resources from './pages/Resources';
 import Home from './pages/Home';
+import AddEventForm from "./components/AddEventForm";
 
 
 // 🗂 Listings
@@ -84,6 +88,16 @@ export default function App() {
               </PrivateRoute>
             }
           />
+          <Route
+            path="/events/new"
+            element={
+              <PrivateRoute>
+                <AddEventForm />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/events/:id" element={<PrivateRoute><ViewEvent /></PrivateRoute>} />
+          <Route path="/events/:id/edit" element={<PrivateRoute><EditEventForm /></PrivateRoute>} />
 
           {/* Notifications */}
           <Route
