@@ -17,3 +17,12 @@ Thumbs.db
 # Environment variables
 .env
 .env.local
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Django database
+*.sqlite3
+db.sqlite3
