@@ -23,7 +23,7 @@ import Notifications from "./components/Notifications";
 import Community from "./pages/Community";
 import Events from "./pages/Events";
 import Features from "./pages/Features";
-import Resources from "./pages/Resources";
+import Resources from "./pages/Resources";   // original Resources page
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import AssessmentReminders from "./pages/AssessmentReminders"; 
@@ -57,62 +57,27 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Home can live at both “/” and “/home” */}
+          {/* Home */}
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
 
-          {/* Other public pages */}
+          {/* Listings */}
           <Route path="/listings" element={<ListingsPage />} />
           <Route path="/listing-detail/:id" element={<ListingDetail />} />
           <Route path="/order-confirmation/success" element={<StripeSuccessPage />} />
 
-          {/* NavBar Routes */}
+          {/* NavBar routes */}
           <Route path="/community" element={<Community />} />
           <Route path="/events" element={<Events />} />
           <Route path="/features" element={<Features />} />
-          <Route path="/resources" element={<Resources />} />
+          <Route path="/resources" element={<Resources />} />  
 
-          {/* Protected routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/analytics"
-            element={
-              <PrivateRoute>
-                <Analytics />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/notifications"
-            element={
-              <PrivateRoute>
-                <Notifications />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/sales"
-            element={
-              <PrivateRoute>
-                <SalesPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/orders"
-            element={
-              <PrivateRoute>
-                <OrdersPage />
-              </PrivateRoute>
-            }
-          />
+          {/* Protected */}
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/analytics" element={<PrivateRoute><Analytics /></PrivateRoute>} />
+          <Route path="/notifications" element={<PrivateRoute><Notifications /></PrivateRoute>} />
+          <Route path="/sales" element={<PrivateRoute><SalesPage /></PrivateRoute>} />
+          <Route path="/orders" element={<PrivateRoute><OrdersPage /></PrivateRoute>} />
           <Route path="/post" element={<PrivateRoute><PostAdPage /></PrivateRoute>} />
           <Route path="/my-ads" element={<PrivateRoute><MyAdsPage /></PrivateRoute>} />
           <Route path="/favorites" element={<PrivateRoute><Favorites /></PrivateRoute>} />
@@ -121,30 +86,13 @@ export default function App() {
           <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
           <Route path="/edit-listing/:id" element={<PrivateRoute><EditListing /></PrivateRoute>} />
           <Route path="/checkout/:id" element={<PrivateRoute><CheckoutPage /></PrivateRoute>} />
-          <Route
-            path="/order-confirmation/:id"
-            element={<PrivateRoute><OrderConfirmation /></PrivateRoute>}
-          />
+          <Route path="/order-confirmation/:id" element={<PrivateRoute><OrderConfirmation /></PrivateRoute>} />
 
-          {/* NEW: Profile route */}
-          <Route
-            path="/profile"
-            element={
-              <PrivateRoute>
-                <Profile />
-              </PrivateRoute>
-            }
-          />
+          {/* Profile */}
+          <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
 
-          {/* NEW: Assessment Reminders */}
-          <Route
-            path="/reminders"
-            element={
-              <PrivateRoute>
-                <AssessmentReminders />
-              </PrivateRoute>
-            }
-          />
+          {/* Reminders */}
+          <Route path="/reminders" element={<PrivateRoute><AssessmentReminders /></PrivateRoute>} />
 
           {/* Fallback */}
           <Route path="*" element={<ListingsPage />} />
