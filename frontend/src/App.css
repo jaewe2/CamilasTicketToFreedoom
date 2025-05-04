@@ -85,14 +85,6 @@
   position: absolute;
   top: 0;
 
-  background: 
-    linear-gradient(0deg, var(--accent-color) 0%, #fff 100%),      
-    linear-gradient(135deg, #0000 20%, var(--bg-dark-2) 20% 30%, #0000 0),
-    repeating-linear-gradient(45deg, var(--bg-dark-2) 20% 30%, var(--bg-dark-1) 0 70%),
-    repeating-linear-gradient(45deg, var(--bg-dark-2) 20% 30%, var(--bg-dark-1) 0 70%);
-
-  background-size: contain, 30px 30px, 30px 30px;
-  background-blend-mode: overlay, normal, normal;
 }
 
 body {
