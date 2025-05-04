@@ -22,7 +22,10 @@ Thumbs.db
 __pycache__/
 *.py[cod]
 *.pyo
+*.pyc
 
 # Django database
 *.sqlite3
 db.sqlite3
+
+*.png
