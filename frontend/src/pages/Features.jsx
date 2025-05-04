@@ -1,4 +1,5 @@
 // src/pages/Features.jsx
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -27,6 +28,7 @@ const features = [
     icon: <FaFileAlt />,
     title: "Resource Sharing",
     description: "Exchange notes, study materials, and resources to enhance your learning experience.",
+    path: "/resources",    // ← add this
   },
   {
     icon: <FaChalkboardTeacher />,
@@ -42,7 +44,7 @@ const features = [
     icon: <FaExclamationCircle />,
     title: "Assessment Reminder",
     description: "Stay on top of your assignments and exams with timely reminders and notifications.",
-    path: "/reminders",  // ← new path
+    path: "/reminders",
   },
 ];
 
@@ -62,7 +64,7 @@ const Features = () => {
             </div>
           );
 
-          // If this feature has a `path`, wrap in a Link
+          // Wrap in a Link if a path is provided
           return feature.path ? (
             <Link to={feature.path} className="feature-link" key={idx}>
               {card}
