@@ -24,6 +24,8 @@ import Community from './pages/Community';
 import Events from './pages/Events';
 import Features from './pages/Features';
 import Resources from './pages/Resources';
+import Home from './pages/Home';
+
 
 // 🗂 Listings
 import ListingsPage from "./Listings/ListingsPage";
@@ -56,6 +58,7 @@ export default function App() {
           <Route path="/listings" element={<ListingsPage />} />
           <Route path="/listing-detail/:id" element={<ListingDetail />} />
           <Route path="/order-confirmation/success" element={<StripeSuccessPage />} />
+          <Route path="/" element={<Home />} />
 
           {/* NavBar Routes */}
           <Route path="/community" element={<Community />} />
