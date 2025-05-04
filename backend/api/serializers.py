@@ -1,5 +1,3 @@
-# api/serializers.py
-
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
@@ -14,7 +12,8 @@ from .models import (
     PaymentMethod,
     Offering,
     Order,
-    Notification,        # ← newly added
+    Notification,
+    Reminder,
 )
 
 User = get_user_model()
@@ -57,7 +56,7 @@ class PaymentMethodSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "icon"]
 
 
-# 🎁 Offering Serializer
+# 🏱 Offering Serializer
 class OfferingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offering
@@ -171,11 +170,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             "id",
-            "email",
-            "username",
             "first_name",
             "last_name",
+            "username",
+            "email",
             "profile_picture",
+            "about",
+            "interests",
+            "graduation_date",
             "company_name",
             "display_as_company",
             "phone_number",
@@ -183,10 +185,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "is_seller",
             "is_admin",
         ]
-        read_only_fields = ["email", "username", "is_buyer", "is_seller", "is_admin"]
+        read_only_fields = ["username", "is_buyer", "is_seller", "is_admin"]
 
 
-# 🧾 Order Serializer (📦 with listing/payment display + shipping + seller)
+# 📟 Order Serializer
 class OrderSerializer(serializers.ModelSerializer):
     buyer                = serializers.ReadOnlyField(source="buyer.id")
     buyer_email          = serializers.ReadOnlyField(source="buyer.email")
@@ -203,7 +205,6 @@ class OrderSerializer(serializers.ModelSerializer):
     )
     total_price          = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     address_details      = serializers.JSONField(required=False)
-
     stripe_payment_intent_id = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     class Meta:
@@ -214,7 +215,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "buyer_email",
             "listing",
             "listing_title",
-            "seller_email",           # ← newly added
+            "seller_email",
             "payment_method",
             "payment_method_name",
             "payment_method_icon",
@@ -241,8 +242,7 @@ class OrderSerializer(serializers.ModelSerializer):
         return order
 
 
-# ─── Analytics Serializers ───────────────────────────────────────────────────
-
+# ─── Analytics Serializers ───
 class OverviewSerializer(serializers.Serializer):
     postsThisMonth  = serializers.IntegerField()
     totalPosts      = serializers.IntegerField()
@@ -264,8 +264,7 @@ class CategoryValueSerializer(serializers.Serializer):
     value    = serializers.IntegerField()
 
 
-# ─── Notifications Serializer ────────────────────────────────────────────────
-
+# ─── Notifications Serializer ───
 class NotificationSerializer(serializers.ModelSerializer):
     actor        = serializers.ReadOnlyField(source="actor.email")
     verb         = serializers.CharField()
@@ -288,3 +287,24 @@ class NotificationSerializer(serializers.ModelSerializer):
 
     def get_target_type(self, obj):
         return obj.target_content_type.model if obj.target_content_type else None
+
+
+# ─── Reminder Serializer ───
+class ReminderSerializer(serializers.ModelSerializer):
+    due_date   = serializers.DateTimeField(required=True)
+    status     = serializers.ChoiceField(choices=Reminder.STATUS_CHOICES, required=False)
+    is_deleted = serializers.BooleanField(required=False)
+
+    class Meta:
+        model = Reminder
+        fields = [
+            "id",
+            "title",
+            "course",
+            "due_date",
+            "notes",
+            "status",         
+            "is_deleted",
+            "created_at"
+        ]
+        read_only_fields = ["id", "created_at"]

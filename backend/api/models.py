@@ -1,5 +1,3 @@
-# api/models.py
-
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
@@ -16,11 +14,17 @@ class CommunityUser(AbstractUser):
     is_buyer = models.BooleanField(default=True)
     is_seller = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
-    profile_picture = models.ImageField(upload_to="profile_pictures/", null=True, blank=True)
 
-    company_name = models.CharField(max_length=255, blank=True, null=True)
+    # Profile data
+    profile_picture   = models.ImageField(upload_to="profile_pictures/", null=True, blank=True)
+    about             = models.TextField(blank=True)
+    interests         = models.CharField(max_length=255, blank=True)
+    graduation_date   = models.DateField(null=True, blank=True)
+
+    # Additional business fields
+    company_name       = models.CharField(max_length=255, blank=True, null=True)
     display_as_company = models.BooleanField(default=False)
-    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    phone_number       = models.CharField(max_length=20, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.username:
@@ -34,7 +38,6 @@ class CommunityUser(AbstractUser):
 # 📂 Category
 class Category(models.Model):
     name = models.CharField(max_length=100)
-
     def __str__(self):
         return self.name
 
@@ -43,62 +46,47 @@ class Category(models.Model):
 class PaymentMethod(models.Model):
     name = models.CharField(max_length=50, unique=True)
     icon = models.URLField(blank=True, null=True)
-
     def __str__(self):
         return self.name
 
 
-# 🎁 Offering / Add-on
+# 🍱 Offering / Add-on
 class Offering(models.Model):
-    name = models.CharField(max_length=100)
+    name        = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    extra_cost = models.DecimalField(max_digits=8, decimal_places=2, default=0)
-
+    extra_cost  = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     def __str__(self):
         return f"{self.name} (+${self.extra_cost})"
 
 
 # 📦 Community Posting
 class CommunityPosting(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="postings")
-    title = models.CharField(max_length=255)
-    description = models.TextField()
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    location = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    payment_methods = models.ManyToManyField(
-        PaymentMethod,
-        blank=True,
-        related_name="postings",
-        help_text="Which payment options you accept"
-    )
-    offerings = models.ManyToManyField(
-        Offering,
-        blank=True,
-        related_name="postings",
-        help_text="Any add-ons or extras for this listing"
-    )
-
+    user            = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="postings")
+    title           = models.CharField(max_length=255)
+    description     = models.TextField()
+    category        = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
+    price           = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    location        = models.CharField(max_length=255)
+    created_at      = models.DateTimeField(auto_now_add=True)
+    payment_methods = models.ManyToManyField(PaymentMethod, blank=True, related_name="postings")
+    offerings       = models.ManyToManyField(Offering, blank=True, related_name="postings")
     def __str__(self):
         return self.title
 
 
 # 🖼️ Posting Images
 class PostingImage(models.Model):
-    posting = models.ForeignKey(CommunityPosting, on_delete=models.CASCADE, related_name="images")
-    image = models.ImageField(upload_to="posting_images/")
+    posting     = models.ForeignKey(CommunityPosting, on_delete=models.CASCADE, related_name="images")
+    image       = models.ImageField(upload_to="posting_images/")
     uploaded_at = models.DateTimeField(auto_now_add=True)
-
     def __str__(self):
         return f"Image for {self.posting.title}"
 
 
 # ❤️ Favorites
 class Favorite(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="favorites")
-    listing = models.ForeignKey(CommunityPosting, on_delete=models.CASCADE, related_name="favorited_by")
+    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="favorites")
+    listing    = models.ForeignKey(CommunityPosting, on_delete=models.CASCADE, related_name="favorited_by")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -111,7 +99,6 @@ class Favorite(models.Model):
 # 🔖 Tags
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
-
     def __str__(self):
         return self.name
 
@@ -119,7 +106,7 @@ class Tag(models.Model):
 # 🔗 Listing-Tag Relationship
 class ListingTag(models.Model):
     listing = models.ForeignKey(CommunityPosting, on_delete=models.CASCADE, related_name="tags")
-    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    tag     = models.ForeignKey(Tag, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ("listing", "tag")
@@ -130,19 +117,13 @@ class ListingTag(models.Model):
 
 # 💬 Messages
 class Message(models.Model):
-    listing = models.ForeignKey(CommunityPosting, on_delete=models.CASCADE, related_name="messages")
-    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_messages")
-    recipient = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="received_messages",
-        null=True,
-        blank=True,
-    )
-    content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    listing        = models.ForeignKey(CommunityPosting, on_delete=models.CASCADE, related_name="messages")
+    sender         = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_messages")
+    recipient      = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="received_messages", null=True, blank=True)
+    content        = models.TextField()
+    created_at     = models.DateTimeField(auto_now_add=True)
     parent_message = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies")
-    read = models.BooleanField(default=False)
+    read           = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["created_at"]
@@ -154,37 +135,20 @@ class Message(models.Model):
 
 # 🧾 Order
 class Order(models.Model):
-    STATUS_PENDING = "PENDING"
-    STATUS_PAID = "PAID"
-    STATUS_CANCELED = "CANCELED"
-    STATUS_CHOICES = [
-        (STATUS_PENDING, "Pending"),
-        (STATUS_PAID, "Paid"),
-        (STATUS_CANCELED, "Canceled"),
-    ]
+    STATUS_PENDING   = "PENDING"
+    STATUS_PAID      = "PAID"
+    STATUS_CANCELED  = "CANCELED"
+    STATUS_CHOICES   = [(STATUS_PENDING, "Pending"), (STATUS_PAID, "Paid"), (STATUS_CANCELED, "Canceled")]
 
-    buyer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="orders")
-    listing = models.ForeignKey(CommunityPosting, on_delete=models.CASCADE, related_name="orders")
-    payment_method = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL, null=True, related_name="orders")
-    offerings = models.ManyToManyField(
-        Offering,
-        blank=True,
-        related_name="orders",
-        help_text="Selected add-ons for this order"
-    )
-    total_price = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        help_text="Sum of listing price + any selected offering costs"
-    )
-    address_details = models.JSONField(
-        blank=True,
-        null=True,
-        help_text="Buyer name, email, phone, and mailing address"
-    )
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
-    created_at = models.DateTimeField(auto_now_add=True)
-    paid_at = models.DateTimeField(null=True, blank=True)
+    buyer           = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="orders")
+    listing         = models.ForeignKey(CommunityPosting, on_delete=models.CASCADE, related_name="orders")
+    payment_method  = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL, null=True, related_name="orders")
+    offerings       = models.ManyToManyField(Offering, blank=True, related_name="orders")
+    total_price     = models.DecimalField(max_digits=12, decimal_places=2)
+    address_details = models.JSONField(blank=True, null=True)
+    status          = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    created_at      = models.DateTimeField(auto_now_add=True)
+    paid_at         = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["-created_at"]
@@ -193,33 +157,46 @@ class Order(models.Model):
         return f"Order #{self.id} by {self.buyer.username} ({self.status})"
 
 
-# ─── Notification Model ─────────────────────────────────────────────────────
+# 📅 Assessment Reminder (with soft delete and status tracking)
+class Reminder(models.Model):
+    STATUS_PENDING   = "PENDING"
+    STATUS_COMPLETED = "COMPLETED"
+    STATUS_MISSED    = "MISSED"
 
+    STATUS_CHOICES = [
+        (STATUS_PENDING, "Pending"),
+        (STATUS_COMPLETED, "Completed"),
+        (STATUS_MISSED, "Missed"),
+    ]
+
+    user        = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reminders")
+    title       = models.CharField(max_length=255)
+    course      = models.CharField(max_length=255)
+    due_date    = models.DateTimeField()
+    notes       = models.TextField(blank=True)
+    is_deleted  = models.BooleanField(default=False)
+    status      = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    created_at  = models.DateTimeField(auto_now_add=True)
+    updated_at  = models.DateTimeField(auto_now=True)  # ✅ NEW FIELD
+
+    class Meta:
+        ordering = ["due_date"]
+
+    def __str__(self):
+        flag = "DELETED" if self.is_deleted else self.status
+        return f"{self.title} ({self.course}) – {flag} – due {self.due_date}"
+
+
+# 🔔 Notification Model
 class Notification(models.Model):
-    """
-    Generic notification pointing to any target object
-    (e.g. Message or Order).
-    """
-    recipient = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="notifications"
-    )
-    actor = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="notifications_from",
-        null=True, blank=True
-    )
-    verb = models.CharField(max_length=255)
-
-    # Generic FK to point at Message, Order, etc.
+    recipient           = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notifications")
+    actor               = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notifications_from", null=True, blank=True)
+    verb                = models.CharField(max_length=255)
     target_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
-    target_object_id = models.PositiveIntegerField(null=True, blank=True)
-    target = GenericForeignKey("target_content_type", "target_object_id")
-
-    unread = models.BooleanField(default=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    target_object_id    = models.PositiveIntegerField(null=True, blank=True)
+    target              = GenericForeignKey("target_content_type", "target_object_id")
+    unread              = models.BooleanField(default=True)
+    timestamp           = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["-timestamp"]
@@ -228,8 +205,7 @@ class Notification(models.Model):
         return f"Notification for {self.recipient} – {self.verb}"
 
 
-# ─── Signal handlers to auto-create Notifications ──────────────────────────
-
+# 🔔 Signal handlers
 @receiver(post_save, sender=Message)
 def notify_on_message(sender, instance, created, **kwargs):
     if not created or not instance.recipient:
@@ -241,12 +217,10 @@ def notify_on_message(sender, instance, created, **kwargs):
         target=instance
     )
 
-
 @receiver(post_save, sender=Order)
 def notify_on_order(sender, instance, created, **kwargs):
     if not created:
         return
-    # Notify the seller of the listing
     seller = instance.listing.user
     Notification.objects.create(
         recipient=seller,

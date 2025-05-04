@@ -8,7 +8,6 @@ from .views import (
     VerifyFirebaseToken,
     CommunityPostingViewSet,
     CategoryViewSet,
-    PostingDetailView,
     FavoriteViewSet,
     TagViewSet,
     ListingTagViewSet,
@@ -24,6 +23,7 @@ from .views import (
     UserSalesByMonthView,
     UserSalesByCategoryView,
     UserNotificationsView,
+    ReminderViewSet,
 )
 
 router = DefaultRouter()
@@ -36,6 +36,7 @@ router.register(r'messages', MessageViewSet, basename='messages')
 router.register(r'payment-methods', PaymentMethodViewSet, basename='payment-methods')
 router.register(r'offerings', OfferingViewSet, basename='offerings')
 router.register(r'orders', OrderViewSet, basename='orders')
+router.register(r'reminders', ReminderViewSet, basename='reminders')  # ← new reminders endpoint
 
 urlpatterns = [
     # DRF router: standard CRUD + @action endpoints
@@ -58,8 +59,9 @@ urlpatterns = [
     # Misc
     path('hello/', HelloWorldView.as_view(), name='hello'),
     path('verify-token/', VerifyFirebaseToken.as_view(), name='verify-token'),
-    path('postings/<int:id>/', PostingDetailView.as_view(), name='posting-detail'),
-    path('user/profile/', UserProfileView.as_view(), name='user-profile'),
+
+    # Profile endpoint
+    path('profile/', UserProfileView.as_view(), name='user-profile'),
 
     # Stripe integration
     path('create-payment-intent/', CreatePaymentIntent.as_view(), name='create-payment-intent'),
