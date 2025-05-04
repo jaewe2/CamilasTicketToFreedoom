@@ -1,0 +1,51 @@
+/* EditEventForm.css */
+
+.edit-event-container {
+    max-width: 700px;
+    margin: 3rem auto;
+    padding: 2rem;
+    background-color: #fff7fa;
+    border-radius: 1rem;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+  }
+  
+  .edit-event-title {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    color: #750042;
+    margin-bottom: 2rem;
+  }
+  
+  .edit-event-form input[type="text"],
+  .edit-event-form input[type="date"],
+  .edit-event-form input[type="time"],
+  .edit-event-form textarea,
+  .edit-event-form input[type="file"] {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1.2rem;
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+  }
+  
+  .edit-event-form textarea {
+    resize: vertical;
+  }
+  
+  .edit-event-form button {
+    background-color: #750042;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .edit-event-form button:hover {
+    background-color: #5c0035;
+  }
+  
