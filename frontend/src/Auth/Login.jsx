@@ -64,9 +64,9 @@ export default function Login() {
   };
 
   return (
-    <div id="bg" style={styles.container}>
-      <div style={styles.card}>
-        <h2 style={styles.title}>Login</h2>
+    <div id="bg">
+      <div className="login-card">
+        <h2 className="login-title">Login</h2>
         <Formik
           initialValues={{ email: "", password: "" }}
           validationSchema={LoginSchema}
@@ -74,30 +74,30 @@ export default function Login() {
         >
           {({ isSubmitting }) => (
             <Form>
-              <Field style={styles.input} type="email" name="email" placeholder="Email" />
-              <ErrorMessage name="email" component="div" style={styles.error} />
+              <Field className="login-input" type="email" name="email" placeholder="Email" />
+              <ErrorMessage name="email" component="div" className="login-error" />
 
-              <div style={styles.passwordGroup}>
+              <div className="password-wrapper">
                 <Field
-                  style={styles.input}
+                  className="login-input"
                   type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="Password"
                 />
                 <span
-                  style={styles.toggle}
+                  className="toggle-password"
                   onClick={() => setShowPassword((prev) => !prev)}
                 >
                   {showPassword ? "Hide" : "Show"}
                 </span>
               </div>
-              <ErrorMessage name="password" component="div" style={styles.error} />
+              <ErrorMessage name="password" component="div" className="login-error" />
 
-              <button style={styles.button} type="submit" disabled={isSubmitting}>
+              <button className="login-btn" type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "Logging in..." : "Log In"}
               </button>
 
-              <p style={styles.link}>
+              <p className="login-link">
                 Need an account? <Link to="/register">Register here</Link>
               </p>
             </Form>
@@ -108,64 +108,3 @@ export default function Login() {
   );
 }
 
-const styles = {
-  container: {
-    display: "flex",
-    height: "100vh",
-    alignItems: "center",
-    justifyContent: "center",
-    background: "#f2f2f2",
-  },
-  card: {
-    background: "#fff",
-    padding: "2rem",
-    borderRadius: "8px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-    width: "300px",
-    textAlign: "center",
-  },
-  title: {
-    marginBottom: "1.5rem",
-  },
-  input: {
-    display: "block",
-    width: "100%",
-    padding: "10px",
-    border: "1px solid #ccc",
-    borderRadius: "4px",
-  },
-  passwordGroup: {
-    position: "relative",
-    marginBottom: "1rem",
-  },
-  toggle: {
-    position: "absolute",
-    right: "10px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    fontSize: "0.8rem",
-    color: "#007bff",
-    cursor: "pointer",
-    userSelect: "none",
-  },
-  button: {
-    width: "100%",
-    padding: "10px",
-    background: "#007bff",
-    color: "#fff",
-    border: "none",
-    borderRadius: "4px",
-    fontWeight: "bold",
-    cursor: "pointer",
-  },
-  link: {
-    marginTop: "1rem",
-    fontSize: "0.9rem",
-  },
-  error: {
-    color: "crimson",
-    fontSize: "0.8rem",
-    marginBottom: "0.5rem",
-    textAlign: "left",
-  },
-};

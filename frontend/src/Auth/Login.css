@@ -1,0 +1,96 @@
+/* Container Styling */
+#bg {
+    background: var(--bg-dark-2, #f9f9f9);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Segoe UI", sans-serif;
+  }
+  
+  /* Card Box */
+  .login-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 2.5rem 2rem;
+    width: 320px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    text-align: center;
+  }
+  
+  /* Title */
+  .login-title {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    color: #222;
+    font-weight: 600;
+  }
+  
+  /* Input Fields */
+  .login-input {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+  
+  .password-wrapper {
+    position: relative;
+  }
+  
+  .toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8rem;
+    color: #860038;
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  /* Submit Button */
+  .login-btn {
+    background-color: #860038;
+    color: white;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .login-btn:hover {
+    background-color: #9e1f4a;
+  }
+  
+  /* Register Link */
+  .login-link {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #555;
+  }
+  
+  .login-link a {
+    color: #860038;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .login-link a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Error messages */
+  .login-error {
+    color: crimson;
+    font-size: 0.8rem;
+    text-align: left;
+    margin-bottom: 0.5rem;
+  }
+  

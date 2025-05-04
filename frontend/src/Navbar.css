@@ -27,4 +27,15 @@
   .navbar-links a:hover {
     text-decoration: underline;
   }
+  .sign-in-link {
+    color: var(--accent-color);
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    margin-left: 1rem;
+  }
+  
+  .sign-in-link:hover {
+    color: var(--highlight-yellow);
+  }
   
