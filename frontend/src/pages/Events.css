@@ -1,0 +1,79 @@
+.events-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  .events-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+  
+  .events-subtitle {
+    font-size: 1rem;
+    color: #444;
+    margin-bottom: 1.5rem;
+  }
+  
+  .events-button-wrapper {
+    margin-bottom: 2rem;
+  }
+  
+  .events-add-btn {
+    background-color: #7a003c;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  
+  .events-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+  
+  .events-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 260px;
+    text-align: left;
+  }
+  
+  .events-info {
+    flex-grow: 1;
+  }
+  
+  .events-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+  
+  .events-date,
+  .events-location {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 0.4rem;
+  }
+  
+  .events-view-btn {
+    background-color: #7a003c;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 1rem;
+  }
+  
