@@ -1,8 +1,16 @@
+// src/pages/Features.jsx
 import React from 'react';
-import { FaUsers, FaComments, FaFileAlt, FaChalkboardTeacher, FaCalendarAlt, FaExclamationCircle } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import {
+  FaUsers,
+  FaComments,
+  FaFileAlt,
+  FaChalkboardTeacher,
+  FaCalendarAlt,
+  FaExclamationCircle
+} from 'react-icons/fa';
 
 import './Features.css';
-
 
 const features = [
   {
@@ -34,6 +42,7 @@ const features = [
     icon: <FaExclamationCircle />,
     title: "Assessment Reminder",
     description: "Stay on top of your assignments and exams with timely reminders and notifications.",
+    path: "/reminders",  // ← new path
   },
 ];
 
@@ -44,13 +53,24 @@ const Features = () => {
         Everything you need to <span>succeed together</span>
       </h1>
       <div className="features-grid">
-        {features.map((feature, index) => (
-          <div key={index} className="feature-card">
-            <div className="feature-icon">{feature.icon}</div>
-            <div className="feature-title">{feature.title}</div>
-            <div className="feature-description">{feature.description}</div>
-          </div>
-        ))}
+        {features.map((feature, idx) => {
+          const card = (
+            <div className="feature-card">
+              <div className="feature-icon">{feature.icon}</div>
+              <div className="feature-title">{feature.title}</div>
+              <div className="feature-description">{feature.description}</div>
+            </div>
+          );
+
+          // If this feature has a `path`, wrap in a Link
+          return feature.path ? (
+            <Link to={feature.path} className="feature-link" key={idx}>
+              {card}
+            </Link>
+          ) : (
+            <React.Fragment key={idx}>{card}</React.Fragment>
+          );
+        })}
       </div>
     </div>
   );

@@ -1,41 +1,69 @@
 /* src/Navbar.css */
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 32px;
-    background: #fce4ec; /* light pink */
-    font-family: 'Segoe UI', sans-serif;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .navbar-logo a {
-    color: #860038;
-    font-size: 1.5rem;
-    font-weight: bold;
-    text-decoration: none;
-  }
-  
-  .navbar-links a {
-    margin-left: 24px;
-    text-decoration: none;
-    color: #333;
-    font-weight: 500;
-    font-size: 1rem;
-  }
-  
-  .navbar-links a:hover {
-    text-decoration: underline;
-  }
-  .sign-in-link {
-    color: var(--accent-color);
-    font-weight: 500;
-    cursor: pointer;
-    text-decoration: none;
-    margin-left: 1rem;
-  }
-  
-  .sign-in-link:hover {
-    color: var(--highlight-yellow);
-  }
-  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 32px;
+  background: #fce4ec; /* light pink */
+  font-family: 'Segoe UI', sans-serif;
+  border-bottom: 1px solid #ddd;
+}
+
+.navbar-logo a {
+  color: #860038;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+}
+
+/* default link styles */
+.navbar-links a {
+  margin-left: 24px;
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.navbar-links a:hover {
+  text-decoration: underline;
+}
+
+/* Profile link uses the same styling as other nav links */
+.navbar-links .nav-link {
+  /* inherits the .navbar-links a styles */
+}
+
+/* Sign Out (span) styled like a link */
+.sign-in-link {
+  margin-left: 24px;
+  color: var(--accent-color);
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.sign-in-link:hover {
+  color: var(--highlight-yellow);
+  text-decoration: underline;
+}
+
+/* Optional: if you have a special sign-in button */
+.sign-in-btn {
+  margin-left: 24px;
+  padding: 6px 12px;
+  background: #860038;
+  color: #fff;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.sign-in-btn:hover {
+  background: #5b0028;
+}

@@ -1,0 +1,165 @@
+/* src/pages/Profile.css */
+
+.profile-page {
+  padding-top: 80px; /* push below global Navbar */
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #ffe5ec 0%, #ffffff 100%);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.profile-container {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  padding: 0 1rem;
+}
+
+.welcome {
+  color: #82132c;
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.profile-card {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* HEADER: avatar | name | buttons */
+.card-header {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+/* AVATAR */
+.avatar-wrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+}
+.avatar-img,
+.avatar-fallback {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background-color: #82132c;
+}
+.avatar-overlay {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.avatar-wrapper:hover .avatar-overlay {
+  opacity: 1;
+}
+.avatar-overlay svg {
+  color: #fff;
+  width: 16px;
+  height: 16px;
+}
+
+/* USER INFO - normal */
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.user-name {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #82132c;
+}
+
+/* BUTTONS */
+.save-btn,
+.cancel-btn,
+.edit-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+}
+.edit-btn {
+  background-color: #82132c;
+  color: #fff;
+}
+.edit-btn:hover {
+  background-color: #5b0f28;
+}
+.save-btn {
+  background-color: #28a745;
+  color: white;
+}
+.save-btn:hover {
+  background-color: #218838;
+}
+.cancel-btn {
+  background-color: #6c757d;
+  color: white;
+}
+.cancel-btn:hover {
+  background-color: #5a6268;
+}
+
+/* hide the plain “Edit” when editing */
+.card-header.editing .edit-btn {
+  display: none;
+}
+
+/* EDIT-MODE: make first & last name inputs line up horizontally */
+.card-header.editing .user-info {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+.card-header.editing .user-info input {
+  flex: 1;
+}
+
+/* BODY */
+.card-body {
+  padding: 0 2rem 2rem;
+}
+.detail {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem;
+}
+.detail h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  color: #333;
+}
+.detail p {
+  margin: 0;
+  color: #555;
+  line-height: 1.4;
+}
+.detail textarea,
+.detail input[type="text"],
+.detail input[type="date"] {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 1rem;
+}

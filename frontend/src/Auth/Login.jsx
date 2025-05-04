@@ -17,7 +17,7 @@ export default function Login() {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        navigate("/dashboard");
+        navigate("/home");
       }
     });
     return () => unsubscribe();
@@ -46,7 +46,7 @@ export default function Login() {
           className: "custom-toast custom-toast-success",
           icon: "✅",
         });
-        navigate("/dashboard");
+        navigate("/home");
       } else {
         toast.error(`Token rejected: ${data.error}`, {
           className: "custom-toast custom-toast-error",

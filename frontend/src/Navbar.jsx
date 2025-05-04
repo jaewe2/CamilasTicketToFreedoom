@@ -38,9 +38,17 @@ export default function Navbar() {
         <Link to="/events">Events</Link>
 
         {user ? (
-          <span className="sign-in-link" onClick={handleSignOut}>
-          Sign Out
-          </span>
+          <>
+            {/* PROFILE LINK */}
+            <Link to="/profile" className="nav-link">
+              Profile
+            </Link>
+
+            {/* SIGN OUT */}
+            <span className="sign-in-link" onClick={handleSignOut}>
+              Sign Out
+            </span>
+          </>
         ) : (
           <Link to="/login" className="sign-in-btn">
             Sign In

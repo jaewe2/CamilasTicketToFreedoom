@@ -20,12 +20,13 @@ import StripeSuccessPage from "./StripeSuccessPage";
 import PrivateRoute from "./PrivateRoute";
 import Navbar from "./Navbar";
 import Notifications from "./components/Notifications";
-import Community from './pages/Community';
-import Events from './pages/Events';
-import Features from './pages/Features';
-import Resources from './pages/Resources';
-import Home from './pages/Home';
-
+import Community from "./pages/Community";
+import Events from "./pages/Events";
+import Features from "./pages/Features";
+import Resources from "./pages/Resources";
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
+import AssessmentReminders from "./pages/AssessmentReminders"; 
 
 // 🗂 Listings
 import ListingsPage from "./Listings/ListingsPage";
@@ -55,17 +56,21 @@ export default function App() {
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
+          {/* Home can live at both “/” and “/home” */}
+          <Route path="/" element={<Home />} />
+          <Route path="/home" element={<Home />} />
+
+          {/* Other public pages */}
           <Route path="/listings" element={<ListingsPage />} />
           <Route path="/listing-detail/:id" element={<ListingDetail />} />
           <Route path="/order-confirmation/success" element={<StripeSuccessPage />} />
-          <Route path="/" element={<Home />} />
 
           {/* NavBar Routes */}
           <Route path="/community" element={<Community />} />
           <Route path="/events" element={<Events />} />
           <Route path="/features" element={<Features />} />
           <Route path="/resources" element={<Resources />} />
-
 
           {/* Protected routes */}
           <Route
@@ -84,8 +89,6 @@ export default function App() {
               </PrivateRoute>
             }
           />
-
-          {/* Notifications */}
           <Route
             path="/notifications"
             element={
@@ -94,8 +97,6 @@ export default function App() {
               </PrivateRoute>
             }
           />
-
-          {/* Seller: view orders placed on your listings */}
           <Route
             path="/sales"
             element={
@@ -104,8 +105,6 @@ export default function App() {
               </PrivateRoute>
             }
           />
-
-          {/* Buyer: view orders you placed */}
           <Route
             path="/orders"
             element={
@@ -114,8 +113,6 @@ export default function App() {
               </PrivateRoute>
             }
           />
-
-          {/* Other protected pages */}
           <Route path="/post" element={<PrivateRoute><PostAdPage /></PrivateRoute>} />
           <Route path="/my-ads" element={<PrivateRoute><MyAdsPage /></PrivateRoute>} />
           <Route path="/favorites" element={<PrivateRoute><Favorites /></PrivateRoute>} />
@@ -124,7 +121,30 @@ export default function App() {
           <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
           <Route path="/edit-listing/:id" element={<PrivateRoute><EditListing /></PrivateRoute>} />
           <Route path="/checkout/:id" element={<PrivateRoute><CheckoutPage /></PrivateRoute>} />
-          <Route path="/order-confirmation/:id" element={<PrivateRoute><OrderConfirmation /></PrivateRoute>} />
+          <Route
+            path="/order-confirmation/:id"
+            element={<PrivateRoute><OrderConfirmation /></PrivateRoute>}
+          />
+
+          {/* NEW: Profile route */}
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            }
+          />
+
+          {/* NEW: Assessment Reminders */}
+          <Route
+            path="/reminders"
+            element={
+              <PrivateRoute>
+                <AssessmentReminders />
+              </PrivateRoute>
+            }
+          />
 
           {/* Fallback */}
           <Route path="*" element={<ListingsPage />} />

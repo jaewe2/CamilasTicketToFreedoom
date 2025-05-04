@@ -1,0 +1,191 @@
+/* src/pages/AssessmentReminders.css */
+
+.reminders-page {
+  padding: 2rem 1rem;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.reminders-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.reminders-header h2 {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+}
+
+.add-btn {
+  background: #82132c;
+  color: #fff;
+  border: none;
+  padding: .5rem 1rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  cursor: pointer;
+  transition: background .2s;
+}
+.add-btn:hover {
+  background: #5b0f28;
+}
+
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: #ddd;
+}
+.day-header {
+  background: #f9f9f9;
+  text-align: center;
+  padding: .5rem 0;
+  font-weight: bold;
+}
+.cell {
+  background: #fff;
+  min-height: 100px;
+  padding: .25rem;
+  position: relative;
+}
+.cell-number {
+  position: absolute;
+  top: .25rem;
+  right: .25rem;
+  font-size: .85rem;
+  color: #999;
+}
+
+.reminder {
+  margin-top: 1.4rem;  /* pushed down under the date */
+  background: #ffe5ec;
+  border-radius: 4px;
+  padding: .25rem .5rem;
+  position: relative;
+  transition: background .2s, box-shadow .2s;
+}
+.reminder:hover {
+  background: #f9c5d1;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.reminder.done {
+  opacity: 0.6;
+  text-decoration: line-through;
+  background: #f2f2f2;
+}
+
+.r-actions {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.r-actions svg {
+  cursor: pointer;
+  font-size: .85rem;
+  color: #82132c;
+  transition: color .2s;
+}
+.r-actions svg:hover {
+  color: #5b0f28;
+}
+.r-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: .85rem;
+  color: #218838;
+  padding: 0 2px;
+}
+.r-actions button:hover {
+  color: #145c2b;
+}
+
+/* Modal form */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-content {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+}
+.modal-content label {
+  display: block;
+  margin-top: .75rem;
+  font-weight: 500;
+}
+.modal-content input,
+.modal-content textarea {
+  width: 100%;
+  padding: .5rem;
+  margin-top: .25rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: inherit;
+}
+.form-buttons {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: .5rem;
+}
+.save-btn {
+  background: #28a745;
+  color: #fff;
+  border: none;
+  padding: .5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background .2s;
+}
+.save-btn:hover { background: #218838; }
+.cancel-btn {
+  background: #6c757d;
+  color: #fff;
+  border: none;
+  padding: .5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background .2s;
+}
+.cancel-btn:hover { background: #5a6268; }
+
+/* Notes popover */
+.notes-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: .5rem;
+  border-radius: 4px;
+  width: 200px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 10;
+}
+
+.close-popover {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+}
