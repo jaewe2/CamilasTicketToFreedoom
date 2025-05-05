@@ -1,72 +1,111 @@
-.register-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background-color: #fff; /* matches theme background */
+/* src/pages/Register.css */
+
+/* Background & centering (uses the existing #bg wrapper) */
+#bg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #fff; /* matches theme background */
+  position: relative;     /* establish stacking context */
+}
+
+/* Canvas should sit behind the card */
+#bg canvas {
+  z-index: 1;
+}
+
+/* Card */
+.register-card {
+  position: relative;     /* allow z-index to apply */
+  z-index: 2;             /* bring above the canvas */
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 320px;
+  text-align: center;
+}
+
+/* Title */
+.register-title {
+  color: var(--accent-color);
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+/* Inputs */
+.register-input {
+  width: 100%;
+  padding: 10px 40px 10px 10px; /* leave space for Show/Hide toggle */
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+/* Password group wrapper */
+.register-password-group {
+  position: relative;
+}
+
+/* Show/Hide toggle */
+.register-toggle {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  font-size: 0.85rem;
+  transform: translateY(-50%);
+  color: var(--accent-color);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Field errors */
+.register-error {
+  color: crimson;
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+  text-align: left;
+}
+
+/* Button */
+.register-button {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--accent-color);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Spinner inside button */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-top-color: #fff;
+  border-radius: 50%;
+  margin-right: 8px;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Spinner animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
-  
-  .register-card {
-    background-color: #fff;
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    width: 320px;
-    text-align: center;
-  }
-  
-  .register-title {
-    color: var(--accent-color);
-    margin-bottom: 1.5rem;
-    font-size: 1.8rem;
-    font-weight: bold;
-  }
-  
-  .register-input {
-    width: 100%;
-    padding: 10px 40px 10px 10px; /* leave space for Show button */
-    margin-bottom: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 1rem;
-  }
-  
-  .register-password-group {
-    position: relative;
-  }
-  
-  .register-toggle {
-    position: absolute;
-    top: 50%;
-    right: 10px;
-    font-size: 0.85rem;
-    transform: translateY(-50%);
-    color: var(--accent-color);
-    cursor: pointer;
-    user-select: none;
-  }
-  
-  .register-error {
-    color: crimson;
-    font-size: 0.8rem;
-    margin-bottom: 0.75rem;
-    text-align: left;
-  }
-  
-  .register-button {
-    width: 100%;
-    padding: 10px;
-    background-color: var(--accent-color);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 1rem;
-  }
-  
-  .register-link {
-    margin-top: 1.25rem;
-    font-size: 0.9rem;
-  }
-  
+}
+
+/* Link under form */
+.register-link {
+  margin-top: 1.25rem;
+  font-size: 0.9rem;
+}

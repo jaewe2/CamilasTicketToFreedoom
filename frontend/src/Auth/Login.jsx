@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
+// src/pages/Login.jsx
+import React, { useState, useEffect } from "react";
+import { Canvas } from "@react-three/fiber";
+import Walker from "../components/Walker";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate, Link } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import "../App.css";
 import "./Login.css";
 
@@ -15,9 +16,7 @@ export default function Login() {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        navigate("/");
-      }
+      if (user) navigate("/");
     });
     return () => unsubscribe();
   }, [navigate]);
@@ -29,46 +28,56 @@ export default function Login() {
 
   const handleLogin = async (values, { setSubmitting }) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-      const token = await userCredential.user.getIdToken();
+      const uc = await signInWithEmailAndPassword(auth, values.email, values.password);
+      const token = await uc.user.getIdToken(true);
       localStorage.setItem("token", token);
-
-      const response = await fetch("http://127.0.0.1:8000/api/verify-token/", {
+      const resp = await fetch("http://127.0.0.1:8000/api/verify-token/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem("user_id", data.id);
+      const data = await resp.json();
+      if (resp.ok) {
+        localStorage.setItem("user_id", data.uid || data.id);
         localStorage.setItem("user_email", data.email);
-        toast.success(`Welcome, ${data.email}`, {
-          className: "custom-toast custom-toast-success",
-          icon: "✅",
-        });
         navigate("/");
       } else {
-        toast.error(`Token rejected: ${data.error}`, {
-          className: "custom-toast custom-toast-error",
-          icon: "⚠️",
-        });
+        console.error("Token rejected:", data.error);
       }
     } catch (error) {
-      toast.error(`Login failed: ${error.message}`, {
-        className: "custom-toast custom-toast-error",
-        icon: "❌",
-      });
+      console.error("Login failed:", error);
+    } finally {
+      setSubmitting(false);
     }
-
-    setSubmitting(false);
   };
+
+  const walkerCount = 3;
+  const totalWidth = 8;
+  const maxAmplitude = totalWidth / (2 * walkerCount);
+  const walkers = Array.from({ length: walkerCount }, (_, i) => {
+    const initialX = -totalWidth / 2 + (i * (totalWidth / (walkerCount - 1)));
+    return { initialX, amplitude: maxAmplitude, speed: 0.8 + i * 0.2, scale: 0.8 };
+  });
+
+  const roles = ["student", "faculty", "connectee"];
 
   return (
     <div id="bg">
+      <Canvas
+        shadows
+        camera={{ position: [0, 1.5, 5], fov: 50 }}
+        gl={{ alpha: true, antialias: true }}
+        style={{ position: "absolute", top: 0, left: 0 }}
+      >
+        <ambientLight intensity={0.5} />
+        <directionalLight position={[5, 5, 5]} intensity={1} />
+        {walkers.map((props, idx) => (
+          <Walker key={idx} {...props} role={roles[idx]} />
+        ))}
+      </Canvas>
+
       <div className="login-card">
-        <h2 className="login-title">Login</h2>
+        <h2 className="login-title">Student Connect Login</h2>
         <Formik
           initialValues={{ email: "", password: "" }}
           validationSchema={LoginSchema}
@@ -76,7 +85,12 @@ export default function Login() {
         >
           {({ isSubmitting }) => (
             <Form>
-              <Field className="login-input" type="email" name="email" placeholder="Email" />
+              <Field
+                className="login-input"
+                type="email"
+                name="email"
+                placeholder="Email"
+              />
               <ErrorMessage name="email" component="div" className="login-error" />
 
               <div className="password-wrapper">
@@ -88,7 +102,7 @@ export default function Login() {
                 />
                 <span
                   className="toggle-password"
-                  onClick={() => setShowPassword((prev) => !prev)}
+                  onClick={() => setShowPassword((p) => !p)}
                 >
                   {showPassword ? "Hide" : "Show"}
                 </span>
@@ -96,7 +110,14 @@ export default function Login() {
               <ErrorMessage name="password" component="div" className="login-error" />
 
               <button className="login-btn" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Logging in..." : "Log In"}
+                {isSubmitting ? (
+                  <>
+                    <span className="spinner" />
+                    Logging in...
+                  </>
+                ) : (
+                  "Log In"
+                )}
               </button>
 
               <p className="login-link">

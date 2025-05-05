@@ -1,18 +1,25 @@
-// src/Register.jsx
-import React, { useState } from "react";
+// src/pages/Register.jsx
+import React, { useState, useEffect } from "react";
+import { Canvas } from "@react-three/fiber";
+import Walker from "../components/Walker";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate, Link } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import "./Register.css";
 
 export default function Register() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) navigate("/");
+    });
+    return () => unsubscribe();
+  }, [navigate]);
 
   const RegisterSchema = Yup.object().shape({
     email: Yup.string().email("Invalid email").required("Required"),
@@ -24,7 +31,14 @@ export default function Register() {
 
   const handleRegister = async (values, { setSubmitting }) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const { email, password } = values;
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      // user is already signed in at this point
       const token = await userCredential.user.getIdToken();
       localStorage.setItem("token", token);
 
@@ -37,40 +51,73 @@ export default function Register() {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success("Registration successful!", {
-          className: "custom-toast custom-toast-success",
-          icon: "🎉",
-        });
-        navigate("/dashboard");
+        localStorage.setItem("user_id", data.uid || data.id);
+        localStorage.setItem("user_email", data.email);
+        navigate("/");
       } else {
-        toast.error(`Token rejected: ${data.error}`, {
-          className: "custom-toast custom-toast-error",
-          icon: "⚠️",
-        });
+        console.error("Token rejected:", data.error);
       }
     } catch (error) {
-      toast.error(`Registration failed: ${error.message}`, {
-        className: "custom-toast custom-toast-error",
-        icon: "❌",
-      });
+      console.error("Registration failed:", error);
+    } finally {
+      setSubmitting(false);
     }
-
-    setSubmitting(false);
   };
 
+  // walker layout
+  const walkerCount = 3;
+  const totalWidth = 8;
+  const maxAmplitude = totalWidth / (2 * walkerCount);
+  const walkers = Array.from({ length: walkerCount }, (_, i) => {
+    const initialX = -totalWidth / 2 + i * (totalWidth / (walkerCount - 1));
+    return {
+      initialX,
+      amplitude: maxAmplitude,
+      speed: 0.8 + i * 0.2,
+      scale: 0.8,
+    };
+  });
+  const roles = ["student", "faculty", "connectee"];
+
   return (
-    <div className="register-container">
+    <div id="bg">
+      <Canvas
+        shadows
+        camera={{ position: [0, 1.5, 5], fov: 50 }}
+        gl={{ alpha: true, antialias: true }}
+        style={{ position: "absolute", top: 0, left: 0 }}
+      >
+        <ambientLight intensity={0.5} />
+        <directionalLight position={[5, 5, 5]} intensity={1} />
+        {walkers.map((props, idx) => (
+          <Walker key={idx} {...props} role={roles[idx]} />
+        ))}
+      </Canvas>
+
       <div className="register-card">
-        <h2 className="register-title">Register</h2>
+        <h2 className="register-title">Student Connect Register</h2>
         <Formik
-          initialValues={{ email: "", password: "", confirmPassword: "" }}
+          initialValues={{
+            email: "",
+            password: "",
+            confirmPassword: "",
+          }}
           validationSchema={RegisterSchema}
           onSubmit={handleRegister}
         >
           {({ isSubmitting }) => (
             <Form>
-              <Field className="register-input" type="email" name="email" placeholder="Email" />
-              <ErrorMessage name="email" component="div" className="register-error" />
+              <Field
+                className="register-input"
+                type="email"
+                name="email"
+                placeholder="Email"
+              />
+              <ErrorMessage
+                name="email"
+                component="div"
+                className="register-error"
+              />
 
               <div className="register-password-group">
                 <Field
@@ -86,7 +133,11 @@ export default function Register() {
                   {showPassword ? "Hide" : "Show"}
                 </span>
               </div>
-              <ErrorMessage name="password" component="div" className="register-error" />
+              <ErrorMessage
+                name="password"
+                component="div"
+                className="register-error"
+              />
 
               <div className="register-password-group">
                 <Field
@@ -102,10 +153,25 @@ export default function Register() {
                   {showConfirm ? "Hide" : "Show"}
                 </span>
               </div>
-              <ErrorMessage name="confirmPassword" component="div" className="register-error" />
+              <ErrorMessage
+                name="confirmPassword"
+                component="div"
+                className="register-error"
+              />
 
-              <button className="register-button" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Registering..." : "Register"}
+              <button
+                className="register-button"
+                type="submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <span className="spinner" />
+                    Registering...
+                  </>
+                ) : (
+                  "Register"
+                )}
               </button>
 
               <p className="register-link">
@@ -118,4 +184,3 @@ export default function Register() {
     </div>
   );
 }
-
