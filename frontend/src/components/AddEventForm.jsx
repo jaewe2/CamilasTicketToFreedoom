@@ -30,6 +30,7 @@ export default function AddEventForm() {
       alert("You must be signed in to create an event.");
       return;
     }
+    
 
     const payload = new FormData();
     for (let key in formData) {
@@ -68,7 +69,7 @@ export default function AddEventForm() {
             name="date"
             value={formData.date}
             onChange={handleChange}
-            requiredß
+            required
             />
             <input
             type="time"

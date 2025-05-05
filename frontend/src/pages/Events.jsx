@@ -8,27 +8,29 @@ export default function Events() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const loadEvents = async () => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (!user) return; // 🔒 Don't fetch if not authenticated
+  
       try {
-        // get a fresh token if the user is signed in
-        let headers = {};
-        if (auth.currentUser) {
-          const token = await auth.currentUser.getIdToken(true);  // force refresh
-          headers.Authorization = `Bearer ${token}`;
-        }
-
-        const res = await fetch("http://127.0.0.1:8000/api/events/", { headers });
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
+        const token = await user.getIdToken(true);
+  
+        const res = await fetch("http://127.0.0.1:8000/api/events/", {
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
+  
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setEvents(data);
       } catch (err) {
         console.error("Failed to load events:", err);
       }
-    };
-
-    loadEvents();
+    });
+  
+    return () => unsubscribe();
   }, []);
 
   return (

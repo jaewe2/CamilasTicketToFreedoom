@@ -4,6 +4,8 @@ from rest_framework.authentication import BaseAuthentication
 from rest_framework import exceptions
 from firebase_admin import auth as firebase_auth
 from django.contrib.auth import get_user_model
+from . import firebase_admin_setup
+
 
 User = get_user_model()
 
@@ -23,8 +25,11 @@ class FirebaseAuthentication(BaseAuthentication):
                 raise exceptions.AuthenticationFailed("Email not found in token")
 
             user, created = User.objects.get_or_create(email=email)
+
+            print("✅ Authenticated:", user.email, "| Is Authenticated:", user.is_authenticated)
             return (user, None)
 
         except Exception as e:
+            print("❌ Firebase auth error:", e)
             raise exceptions.AuthenticationFailed(f"Invalid Firebase token: {e}")
 
