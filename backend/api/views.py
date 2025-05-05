@@ -17,7 +17,7 @@ import api.firebase_admin_setup
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.generics import RetrieveAPIView
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -34,6 +34,8 @@ from .models import (
     Offering,
     Order,
     Event,
+    Reminder,
+    Resource
 )
 from .serializers import (
     CommunityPostingSerializer,
@@ -51,6 +53,8 @@ from .serializers import (
     MonthCountSerializer,
     CategoryValueSerializer,
     EventSerializer,
+    ReminderSerializer,
+    ResourceSerializer
 )
 
 User = get_user_model()
@@ -156,6 +160,31 @@ class CommunityPostingViewSet(viewsets.ModelViewSet):
         qs = Order.objects.filter(listing=posting).order_by("-created_at")
         serializer = OrderSerializer(qs, many=True)
         return Response(serializer.data)
+
+
+class ReminderViewSet(viewsets.ModelViewSet):
+    serializer_class = ReminderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Reminder.objects.filter(user=self.request.user, deleted=False)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    @action(detail=True, methods=["post"], url_path="soft-delete")
+    def soft_delete(self, request, pk=None):
+        reminder = self.get_object()
+        reminder.deleted = True
+        reminder.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=["post"], url_path="mark-complete")
+    def mark_complete(self, request, pk=None):
+        reminder = self.get_object()
+        reminder.status = Reminder.Status.COMPLETED
+        reminder.save()
+        return Response(self.get_serializer(reminder).data, status=status.HTTP_200_OK)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -303,35 +332,32 @@ class MessageViewSet(viewsets.ModelViewSet):
 
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def get(self, request):
-        try:
-            id_token = request.META.get("HTTP_AUTHORIZATION", "").split()[-1]
-            decoded = firebase_auth.verify_id_token(id_token)
-            email = decoded.get("email")
-            user, _ = User.objects.get_or_create(
-                email=email,
-                defaults={"username": email.split("@")[0], "is_active": True}
-            )
-        except Exception:
-            return Response({"error": "Invalid token."}, status=status.HTTP_401_UNAUTHORIZED)
-
-        return Response(UserProfileSerializer(user).data)
+        serializer = UserProfileSerializer(request.user, context={'request': request})
+        return Response(serializer.data)
 
     def put(self, request):
-        serializer = UserProfileSerializer(request.user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = UserProfileSerializer(
+            request.user,
+            data=request.data,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
     def patch(self, request):
-        serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = UserProfileSerializer(
+            request.user,
+            data=request.data,
+            partial=True,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -582,13 +608,16 @@ class UserNotificationsView(APIView):
             "newOrdersToday": new_orders_today,
         })
 
+
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all().order_by('-created_at')
     serializer_class = EventSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    parser_classes = [MultiPartParser, FormParser]      
 
     def perform_create(self, serializer):
         serializer.save(creator=self.request.user)
+
 
 class GeminiSummarizerView(APIView):
     permission_classes = [IsAuthenticated]
@@ -614,3 +643,26 @@ class GeminiSummarizerView(APIView):
             return Response(res.json(), status=res.status_code)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
+
+class ResourceViewSet(viewsets.ModelViewSet):
+    queryset = Resource.objects.all().order_by('-created_at')
+    serializer_class = ResourceSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_queryset(self):
+        # only return the current user’s resources
+        return Resource.objects.filter(owner=self.request.user).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        # set owner on create
+        serializer.save(owner=self.request.user)
+
+    def get_serializer_context(self):
+        """
+        Ensure that SerializerMethodField.build_absolute_uri()
+        has a request to build full file_url.
+        """
+        ctx = super().get_serializer_context()
+        ctx["request"] = self.request
+        return ctx

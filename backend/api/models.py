@@ -11,16 +11,23 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+
 # 🔐 Custom User Model
 class CommunityUser(AbstractUser):
-    is_buyer = models.BooleanField(default=True)
-    is_seller = models.BooleanField(default=True)
-    is_admin = models.BooleanField(default=False)
-    profile_picture = models.ImageField(upload_to="profile_pictures/", null=True, blank=True)
+    is_buyer           = models.BooleanField(default=True)
+    is_seller          = models.BooleanField(default=True)
+    is_admin           = models.BooleanField(default=False)
 
-    company_name = models.CharField(max_length=255, blank=True, null=True)
+    # Profile data
+    profile_picture    = models.ImageField(upload_to="profile_pictures/", null=True, blank=True)
+    about              = models.TextField(blank=True)
+    interests          = models.CharField(max_length=255, blank=True)
+    graduation_date    = models.DateField(null=True, blank=True)
+
+    # Additional business fields
+    company_name       = models.CharField(max_length=255, blank=True, null=True)
     display_as_company = models.BooleanField(default=False)
-    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    phone_number       = models.CharField(max_length=20, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.username:
@@ -196,10 +203,6 @@ class Order(models.Model):
 # ─── Notification Model ─────────────────────────────────────────────────────
 
 class Notification(models.Model):
-    """
-    Generic notification pointing to any target object
-    (e.g. Message or Order).
-    """
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -213,7 +216,6 @@ class Notification(models.Model):
     )
     verb = models.CharField(max_length=255)
 
-    # Generic FK to point at Message, Order, etc.
     target_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
     target_object_id = models.PositiveIntegerField(null=True, blank=True)
     target = GenericForeignKey("target_content_type", "target_object_id")
@@ -227,8 +229,6 @@ class Notification(models.Model):
     def __str__(self):
         return f"Notification for {self.recipient} – {self.verb}"
 
-
-# ─── Signal handlers to auto-create Notifications ──────────────────────────
 
 @receiver(post_save, sender=Message)
 def notify_on_message(sender, instance, created, **kwargs):
@@ -246,7 +246,6 @@ def notify_on_message(sender, instance, created, **kwargs):
 def notify_on_order(sender, instance, created, **kwargs):
     if not created:
         return
-    # Notify the seller of the listing
     seller = instance.listing.user
     Notification.objects.create(
         recipient=seller,
@@ -255,11 +254,11 @@ def notify_on_order(sender, instance, created, **kwargs):
         target=instance
     )
 
-# Events 
 
+# Events
 class Event(models.Model):
     creator = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="events"
     )
@@ -273,3 +272,51 @@ class Event(models.Model):
 
     def __str__(self):
         return self.title
+
+
+# ▶︎ Assessment Reminder model
+class Reminder(models.Model):
+    class Status(models.TextChoices):
+        PENDING   = 'PENDING',   'Pending'
+        COMPLETED = 'COMPLETED', 'Completed'
+
+    user     = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    title    = models.CharField(max_length=200)
+    course   = models.CharField(max_length=100, blank=True)
+    due_date = models.DateTimeField(null=True, blank=True)
+    notes    = models.TextField(blank=True)
+    status   = models.CharField(
+        max_length=10,
+        choices=Status.choices,
+        default=Status.PENDING
+    )
+    deleted  = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['due_date']
+
+    def __str__(self):
+        return f"{self.title} ({self.status})"
+
+
+# 📚 Resource Sharing Model
+class Resource(models.Model):
+    owner       = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="resources"
+    )
+    title       = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    file        = models.FileField(upload_to="resources/")
+    created_at  = models.DateTimeField(auto_now_add=True)
+    updated_at  = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.title} by {self.owner}"

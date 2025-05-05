@@ -3,18 +3,10 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-// import ViewEvent from "./pages/ViewEvent";
-// import EventDetails from "./pages/EventDetails";
 import EventDetails from './components/EventDetails';
-
-
-
-
 import EditEventForm from "./components/EditEventForm";
 import AISummarizer from './pages/AISummarizer';
-
-
-// 🔧 Pages & Components
+import AssessmentReminders from './pages/AssessmentReminders';
 import Login from "./Auth/Login";
 import Register from "./Auth/Register";
 import Dashboard from "./pages/Dashboard";
@@ -24,6 +16,7 @@ import MyAdsPage from "./pages/MyAdsPage";
 import MyMessages from "./MyMessages";
 import Inbox from "./pages/Inbox";
 import SettingsPage from "./pages/SettingsPage";
+import Profile from "./pages/Profile";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderConfirmation from "./OrderConfirmation";
 import StripeSuccessPage from "./StripeSuccessPage";
@@ -36,23 +29,15 @@ import Features from './pages/Features';
 import Resources from './pages/Resources';
 import Home from './pages/Home';
 import AddEventForm from "./components/AddEventForm";
-
-
-// 🗂 Listings
 import ListingsPage from "./Listings/ListingsPage";
 import ListingDetail from "./Listings/ListingDetail";
 import EditListing from "./Listings/EditListing";
 import Favorites from "./Listings/Favorites";
-
-// 📈 Seller view
 import SalesPage from "./pages/SalesPage";
-// 🛒 Buyer view
 import OrdersPage from "./pages/OrdersPage";
-
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// 🔑 Stripe
 const stripePromise = loadStripe("pk_test_YourPublishableKeyHere");
 
 export default function App() {
@@ -61,9 +46,7 @@ export default function App() {
       <Router>
         <Navbar />
         <ToastContainer position="top-right" autoClose={3000} />
-
         <Routes>
-          {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/listings" element={<ListingsPage />} />
@@ -71,15 +54,12 @@ export default function App() {
           <Route path="/order-confirmation/success" element={<StripeSuccessPage />} />
           <Route path="/" element={<Home />} />
           <Route path="/ai-summarizer" element={<AISummarizer />} />
-
-          {/* NavBar Routes */}
           <Route path="/community" element={<Community />} />
           <Route path="/events" element={<Events />} />
           <Route path="/features" element={<Features />} />
           <Route path="/resources" element={<Resources />} />
-
-
-          {/* Protected routes */}
+          <Route path="/reminders" element={<AssessmentReminders />} />
+          <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route
             path="/dashboard"
             element={
@@ -104,12 +84,8 @@ export default function App() {
               </PrivateRoute>
             }
           />
-          {/*<Route path="/events/:id" element={<PrivateRoute><ViewEvent /></PrivateRoute>} />*/}
           <Route path="/events/:id" element={<PrivateRoute><EventDetails /></PrivateRoute>} />
-
           <Route path="/events/:id/edit" element={<PrivateRoute><EditEventForm /></PrivateRoute>} />
-
-          {/* Notifications */}
           <Route
             path="/notifications"
             element={
@@ -118,8 +94,6 @@ export default function App() {
               </PrivateRoute>
             }
           />
-
-          {/* Seller: view orders placed on your listings */}
           <Route
             path="/sales"
             element={
@@ -128,8 +102,6 @@ export default function App() {
               </PrivateRoute>
             }
           />
-
-          {/* Buyer: view orders you placed */}
           <Route
             path="/orders"
             element={
@@ -138,8 +110,6 @@ export default function App() {
               </PrivateRoute>
             }
           />
-
-          {/* Other protected pages */}
           <Route path="/post" element={<PrivateRoute><PostAdPage /></PrivateRoute>} />
           <Route path="/my-ads" element={<PrivateRoute><MyAdsPage /></PrivateRoute>} />
           <Route path="/favorites" element={<PrivateRoute><Favorites /></PrivateRoute>} />
@@ -149,8 +119,6 @@ export default function App() {
           <Route path="/edit-listing/:id" element={<PrivateRoute><EditListing /></PrivateRoute>} />
           <Route path="/checkout/:id" element={<PrivateRoute><CheckoutPage /></PrivateRoute>} />
           <Route path="/order-confirmation/:id" element={<PrivateRoute><OrderConfirmation /></PrivateRoute>} />
-
-          {/* Fallback */}
           <Route path="*" element={<ListingsPage />} />
         </Routes>
       </Router>

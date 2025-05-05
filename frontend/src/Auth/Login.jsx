@@ -13,11 +13,10 @@ export default function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
-  // ✅ Redirect if user is already logged in
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        navigate("/dashboard");
+        navigate("/");
       }
     });
     return () => unsubscribe();
@@ -49,7 +48,7 @@ export default function Login() {
           className: "custom-toast custom-toast-success",
           icon: "✅",
         });
-        navigate("/dashboard");
+        navigate("/");
       } else {
         toast.error(`Token rejected: ${data.error}`, {
           className: "custom-toast custom-toast-error",
@@ -110,4 +109,3 @@ export default function Login() {
     </div>
   );
 }
-

@@ -19,11 +19,9 @@ print("✅ Gemini API key loaded:", GEMINI_API_KEY)
 DEBUG = True
 ALLOWED_HOSTS = []
 
-
 # ─── Application definition ───────────────────────────────────────────────────
 
 INSTALLED_APPS = [
-    # Django core
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -31,12 +29,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Third-party
     'corsheaders',
     'rest_framework',
     'channels',
 
-    # Your apps
     'api',
 ]
 
@@ -46,7 +42,6 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
 
-    # CORS must come before CommonMiddleware
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
 
@@ -76,7 +71,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'mybackend.wsgi.application'
 ASGI_APPLICATION = 'mybackend.asgi.application'
 
-
 # ─── Database ─────────────────────────────────────────────────────────────────
 
 DATABASES = {
@@ -85,7 +79,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # ─── Password validation ──────────────────────────────────────────────────────
 
@@ -96,14 +89,12 @@ AUTH_PASSWORD_VALIDATORS = [
     { 'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator' },
 ]
 
-
 # ─── Internationalization & Time ──────────────────────────────────────────────
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
-
 
 # ─── Static & Media files ─────────────────────────────────────────────────────
 
@@ -112,17 +103,14 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
 # ─── Default primary key field type ───────────────────────────────────────────
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
 # ─── CORS Settings ────────────────────────────────────────────────────────────
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-
 
 # ─── Django REST Framework ────────────────────────────────────────────────────
 
@@ -136,7 +124,6 @@ REST_FRAMEWORK = {
     ],
 }
 
-
 # ─── Channels / WebSockets ─────────────────────────────────────────────────────
 
 CHANNEL_LAYERS = {
@@ -148,12 +135,10 @@ CHANNEL_LAYERS = {
     },
 }
 
-
 # ─── Stripe Payment Keys ──────────────────────────────────────────────────────
 
 STRIPE_PUBLIC_KEY  = "pk_test_51RF0z8QwZ6p2QUvMv8etQl1SVBO3SKHD52A2rEtrBxTkt3UUDEigL7pUEoUoSHzqLl3gYREyeUFoctxmTXIsfmEE005qYckJZJ"
 STRIPE_SECRET_KEY  = "sk_test_51RF0z8QwZ6p2QUvMhNYSOZL0k5sHkVXXw0ViZmnKDcaPDzgLeqWhGMlQjpwiT41NTHXqu4pU3ROH07dVWoToR5cO00sEx5fKyk"
-
 
 # ─── Email Settings ──────────────────────────────────────────────────────────
 
@@ -162,5 +147,5 @@ EMAIL_HOST         = "smtp.gmail.com"
 EMAIL_PORT         = 587
 EMAIL_USE_TLS      = True
 EMAIL_HOST_USER    = "jaewe9@gmail.com"
-EMAIL_HOST_PASSWORD= "plih phvw qykb froq"   # Gmail App Password
+EMAIL_HOST_PASSWORD= "plih phvw qykb froq"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
