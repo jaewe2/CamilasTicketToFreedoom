@@ -1,16 +1,21 @@
 # mybackend/settings.py
 
 from pathlib import Path
+from dotenv import load_dotenv
 import os
 
 # ─── Base directory ───────────────────────────────────────────────────────────
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv()
 
 # ─── Security & Debugging ─────────────────────────────────────────────────────
 
 SECRET_KEY = 'django-insecure-s6i31x3qv6*kppkr%7rio_ur7_*ey$0-2fy1)xv6b#42--k+ox'
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+print("✅ Gemini API key loaded:", GEMINI_API_KEY)
+
 DEBUG = True
 ALLOWED_HOSTS = []
 

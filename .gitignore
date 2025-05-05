@@ -23,6 +23,7 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.pyc
+__pycache__/
 
 # Django database
 *.sqlite3

@@ -9,6 +9,8 @@ from django.db.models import Q, Count, F, DateField
 from django.db.models.functions import TruncMonth, Cast
 from django.contrib.auth import get_user_model
 
+import requests
+
 from firebase_admin import auth as firebase_auth
 import api.firebase_admin_setup
 
@@ -587,3 +589,28 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(creator=self.request.user)
+
+class GeminiSummarizerView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        text = request.data.get("text", "")
+
+        if not text:
+            return Response({"error": "Missing text."}, status=400)
+
+        api_key = settings.GEMINI_API_KEY
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+
+
+        payload = {
+            "contents": [{
+                "parts": [{"text": f"Summarize this college course syllabus into key sections like instructor info, office hours, major assignments, and grading policy:\n\n{text}"}]
+            }]
+        }
+
+        try:
+            res = requests.post(url, json=payload)
+            return Response(res.json(), status=res.status_code)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)

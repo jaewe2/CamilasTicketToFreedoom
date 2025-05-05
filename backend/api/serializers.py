@@ -293,6 +293,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 # events serializer
 
 class EventSerializer(serializers.ModelSerializer):
+    creator = serializers.ReadOnlyField(source='creator.email')
     class Meta:
         model = Event
         fields = '__all__'

@@ -3,8 +3,15 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import ViewEvent from "./pages/ViewEvent";
+// import ViewEvent from "./pages/ViewEvent";
+// import EventDetails from "./pages/EventDetails";
+import EventDetails from './components/EventDetails';
+
+
+
+
 import EditEventForm from "./components/EditEventForm";
+import AISummarizer from './pages/AISummarizer';
 
 
 // 🔧 Pages & Components
@@ -63,6 +70,7 @@ export default function App() {
           <Route path="/listing-detail/:id" element={<ListingDetail />} />
           <Route path="/order-confirmation/success" element={<StripeSuccessPage />} />
           <Route path="/" element={<Home />} />
+          <Route path="/ai-summarizer" element={<AISummarizer />} />
 
           {/* NavBar Routes */}
           <Route path="/community" element={<Community />} />
@@ -96,7 +104,9 @@ export default function App() {
               </PrivateRoute>
             }
           />
-          <Route path="/events/:id" element={<PrivateRoute><ViewEvent /></PrivateRoute>} />
+          {/*<Route path="/events/:id" element={<PrivateRoute><ViewEvent /></PrivateRoute>} />*/}
+          <Route path="/events/:id" element={<PrivateRoute><EventDetails /></PrivateRoute>} />
+
           <Route path="/events/:id/edit" element={<PrivateRoute><EditEventForm /></PrivateRoute>} />
 
           {/* Notifications */}

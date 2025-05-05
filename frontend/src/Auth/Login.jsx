@@ -44,6 +44,7 @@ export default function Login() {
 
       if (response.ok) {
         localStorage.setItem("user_id", data.id);
+        localStorage.setItem("user_email", data.email);
         toast.success(`Welcome, ${data.email}`, {
           className: "custom-toast custom-toast-success",
           icon: "✅",

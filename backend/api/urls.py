@@ -3,6 +3,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
+
 from .views import (
     HelloWorldView,
     VerifyFirebaseToken,
@@ -25,6 +26,7 @@ from .views import (
     UserSalesByCategoryView,
     UserNotificationsView,
     EventViewSet,
+    GeminiSummarizerView,
 )
 
 router = DefaultRouter()
@@ -74,8 +76,8 @@ urlpatterns = [
     path('analytics/user/sales-by-category/', UserSalesByCategoryView.as_view(), name='analytics-user-sales-by-category'),
     path('analytics/user/notifications/', UserNotificationsView.as_view(), name='analytics-user-notifications'),
 
-    # Events
-    path('', include(router.urls)),
+    # Gemini integration
+    path('gemini-summarize/', GeminiSummarizerView.as_view(), name='gemini-summarize')
 
 ]
 
