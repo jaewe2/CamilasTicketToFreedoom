@@ -5,6 +5,7 @@
   "proxy": "http://127.0.0.1:8000",
   "dependencies": {
     "@react-three/drei": "^10.0.7",
+    "@react-three/fiber": "^9.1.2",
     "@stripe/react-stripe-js": "^3.6.0",
     "@stripe/stripe-js": "^7.1.0",
     "@testing-library/dom": "^10.4.0",

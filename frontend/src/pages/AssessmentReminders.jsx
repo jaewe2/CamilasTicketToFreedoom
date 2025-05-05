@@ -21,6 +21,19 @@ function generateCalendar(year, month) {
   return weeks;
 }
 
+
+function getTimeRemaining(dueDate) {
+  const total = Date.parse(dueDate) - Date.now();
+  if (total <= 0) return 'Time is up';
+
+  const days = Math.floor(total / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((total / (1000 * 60)) % 60);
+  const seconds = Math.floor((total / 1000) % 60);
+
+  return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+}
+
 const AssessmentReminders = () => {
   const today = new Date();
   const [current, setCurrent] = useState({
@@ -42,6 +55,23 @@ const AssessmentReminders = () => {
       'Content-Type': 'application/json',
     };
   };
+  const [countdowns, setCountdowns] = useState({});
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCountdowns(() =>
+        reminders.reduce((acc, r) => {
+          if (r.due_date) {
+            acc[r.id] = getTimeRemaining(r.due_date);
+          }
+          return acc;
+        }, {})
+      );
+    }, 1000);
+  
+    return () => clearInterval(interval);
+  }, [reminders]);
+
 
   useEffect(() => {
     isMounted.current = true;
@@ -152,51 +182,76 @@ const AssessmentReminders = () => {
         </button>
       </header>
 
-      <div className="calendar">
-        {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
-          <div key={d} className="day-header">{d}</div>
-        ))}
+      <div className="reminders-container">
+        <div className="calendar-section">
+          <div className="calendar">
+            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
+              <div key={d} className="day-header">{d}</div>
+            ))}
 
-        {weeks.map((week, wi) =>
-          week.map((day, di) => {
-            const dateStr = day
-              ? `${current.year}-${String(current.month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`
-              : null;
-            const dayRems = dateStr ? reminders.filter(r => r.due_date?.startsWith(dateStr)) : [];
-            return (
-              <div key={`${wi}-${di}`} className="cell">
-                {day && <div className="cell-number">{day}</div>}
-                {dayRems.map(r => (
-                  <div
-                    key={r.id}
-                    className={`reminder ${r.status === 'COMPLETED' ? 'done' : ''}`}
-                    onClick={() => setOpenNoteId(openNoteId === r.id ? null : r.id)}
-                  >
-                    <strong>{r.title}</strong><br/>
-                    <small>{r.course}</small>
-                    <div className="r-actions" onClick={e => e.stopPropagation()}>
-                      {r.status !== 'COMPLETED' && (
-                        <button onClick={() => markComplete(r.id)} title="Mark as complete">✔️</button>
-                      )}
-                      <FaEdit onClick={() => openEdit(r)} />
-                      <FaTrash onClick={() => del(r.id)} />
-                    </div>
+            {weeks.map((week, wi) =>
+              week.map((day, di) => {
+                const dateStr = day
+                  ? `${current.year}-${String(current.month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`
+                  : null;
+                const dayRems = dateStr ? reminders.filter(r => r.due_date?.startsWith(dateStr)) : [];
+                return (
+                  <div key={`${wi}-${di}`} className="cell">
+                    {day && <div className="cell-number">{day}</div>}
+                    {dayRems.map(r => (
+                      <div
+                        key={r.id}
+                        className={`reminder ${r.status === 'COMPLETED' ? 'done' : ''}`}
+                        onClick={() => setOpenNoteId(openNoteId === r.id ? null : r.id)}
+                      >
+                        <strong>{r.title}</strong><br/>
+                        <small>{r.course}</small>
+                        <div className="r-actions" onClick={e => e.stopPropagation()}>
+                          {r.status !== 'COMPLETED' && (
+                            <button onClick={() => markComplete(r.id)} title="Mark as complete">✔️</button>
+                          )}
+                          <FaEdit onClick={() => openEdit(r)} />
+                          <FaTrash onClick={() => del(r.id)} />
+                        </div>
 
-                    {openNoteId === r.id && (
-                      <div className="notes-popover">
-                        <button
-                          className="close-popover"
-                          onClick={e => { e.stopPropagation(); setOpenNoteId(null); }}
-                        >×</button>
-                        <p>{r.notes || 'No extra notes'}</p>
+                        {openNoteId === r.id && (
+                          <div className="notes-popover">
+                            <button
+                              className="close-popover"
+                              onClick={e => { e.stopPropagation(); setOpenNoteId(null); }}
+                            >×</button>
+                            <p>{r.notes || 'No extra notes'}</p>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    ))}
                   </div>
-                ))}
-              </div>
-            );
-          })
-        )}
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        <div className="countdown-panel">
+          <h3>Next Assignment</h3>
+          {reminders.length > 0 ? (
+            (() => {
+              const upcoming = reminders
+                .filter(r => r.due_date && new Date(r.due_date) > new Date())
+                .sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+              const next = upcoming[0];
+              return next ? (
+                <div className="countdown-box">
+                  <strong>{next.title}</strong>
+                  <p>{next.course}</p>
+                  <p>{countdowns[next.id] || 'Calculating...'}</p>
+                </div>
+              ) : <p>No upcoming assignments</p>;
+            })()
+          ) : (
+            <p>No reminders</p>
+          )}
+        </div>
       </div>
 
       {showForm && (
