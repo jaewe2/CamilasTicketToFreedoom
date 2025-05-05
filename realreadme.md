@@ -14,7 +14,9 @@ npm install jspdf
 
 npm install recharts react-toastify firebase
 
-pnpm install lucide-react
+npm install lucide-react
+
+npm install three @react-three/fiber @react-three/drei
 
 
 backend dependencies:
