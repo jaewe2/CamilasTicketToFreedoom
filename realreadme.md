@@ -14,6 +14,8 @@ npm install jspdf
 
 npm install recharts react-toastify firebase
 
+pnpm install lucide-react
+
 
 backend dependencies:
 
