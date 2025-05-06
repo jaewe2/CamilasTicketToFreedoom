@@ -78,9 +78,9 @@ class ListingTagAdmin(admin.ModelAdmin):
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
-    list_display = ("id", "listing", "sender", "recipient", "created_at", "read")
-    list_filter = ("created_at", "read")
-    search_fields = ("sender__email", "recipient__email", "listing__title", "content")
+    list_display = ('id', 'sender', 'recipient', 'content', 'timestamp')
+    list_filter = ('sender', 'recipient', 'timestamp')
+    search_fields = ('sender__username', 'recipient__username', 'content')
 
 
 @admin.register(Order)

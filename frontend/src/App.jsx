@@ -37,10 +37,13 @@ import SalesPage from "./pages/SalesPage";
 import OrdersPage from "./pages/OrdersPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Chat from './pages/Chat';
 
 const stripePromise = loadStripe("pk_test_YourPublishableKeyHere");
 
 export default function App() {
+  const token = localStorage.getItem('token'); // or from context
+  const currentUser = localStorage.getItem('username'); 
   return (
     <Elements stripe={stripePromise}>
       <Router>
@@ -60,6 +63,10 @@ export default function App() {
           <Route path="/resources" element={<Resources />} />
           <Route path="/reminders" element={<AssessmentReminders />} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/messages" element={<MyMessages />} />
+          <Route path="/inbox" element={<PrivateRoute><Inbox /></PrivateRoute>} />
+          <Route path="/chat" element={<Chat token={token} currentUser={currentUser} />} />
+          <Route path="/chat/:recipient" element={<Chat token={token} currentUser={currentUser} />} />
           <Route
             path="/dashboard"
             element={

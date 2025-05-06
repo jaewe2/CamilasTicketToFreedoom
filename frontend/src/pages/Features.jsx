@@ -21,6 +21,7 @@ const features = [
     icon: <FaComments />,
     title: "Chat Support Globally",
     description: "Connect with peers and mentors worldwide through real-time chat support for academic and personal growth.",
+    path: "/chat",
   },
   {
     icon: <FaFileAlt />,
@@ -58,6 +59,7 @@ const Features = () => {
         {features.map((feature, idx) => {
           const card = (
             <div className="feature-card">
+              
               <div className="feature-icon">{feature.icon}</div>
               <div className="feature-title">{feature.title}</div>
               <div className="feature-description">{feature.description}</div>

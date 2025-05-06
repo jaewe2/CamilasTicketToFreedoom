@@ -16,6 +16,8 @@ from .models import (
     Event,
     Reminder,
     Resource,
+    Message,
+    CommunityUser,
 )
 
 User = get_user_model()
@@ -128,41 +130,67 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 # 💬 Full Message Serializer
 class MessageSerializer(serializers.ModelSerializer):
-    sender         = serializers.ReadOnlyField(source="sender.email")
-    recipient      = serializers.ReadOnlyField(source="recipient.email")
-    listing        = serializers.PrimaryKeyRelatedField(queryset=CommunityPosting.objects.all())
-    listing_title  = serializers.CharField(source="listing.title", read_only=True)
-    parent_message = serializers.PrimaryKeyRelatedField(
-        queryset=Message.objects.all(), required=False, allow_null=True
-    )
-    read           = serializers.BooleanField()
-
+    sender = serializers.ReadOnlyField(source="sender.email")
+    sender_username = serializers.ReadOnlyField(source="sender.username")
+    sender_first_name = serializers.ReadOnlyField(source="sender.first_name")
+    sender_last_name = serializers.ReadOnlyField(source="sender.last_name")
+    sender_company_name = serializers.ReadOnlyField(source="sender.company_name")
+    sender_display_as_company = serializers.ReadOnlyField(source="sender.display_as_company")
+    sender_display_name = serializers.SerializerMethodField()
+    recipient_username = serializers.CharField(write_only=True)
+    
     class Meta:
         model = Message
         fields = [
             "id",
-            "listing",
-            "listing_title",
             "sender",
-            "recipient",
+            "sender_username",
+            "sender_first_name",
+            "sender_last_name",
+            "sender_company_name",
+            "sender_display_as_company",
+            "sender_display_name",
+            "recipient_username",
             "content",
-            "created_at",
+            "timestamp",
             "parent_message",
             "read",
         ]
+        read_only_fields = ["sender", "timestamp"]
+    def get_sender_display_name(self, obj):
+        if obj.sender.first_name and obj.sender.last_name:
+            return f"{obj.sender.first_name} {obj.sender.last_name}"
+        elif obj.sender.company_name and obj.sender.display_as_company:
+            return obj.sender.company_name
+        elif obj.sender.email:
+            return obj.sender.email
+        return obj.sender.username
+        
+    def create(self, validated_data):
+        recipient_username = validated_data.pop('recipient_username')
+        try:
+            recipient = CommunityUser.objects.get(username=recipient_username)
+        except CommunityUser.DoesNotExist:
+            raise serializers.ValidationError({
+                "recipient_username": f"User with username '{recipient_username}' does not exist."
+            })
+        
+        return Message.objects.create(
+            recipient=recipient,
+            **validated_data
+        )
 
 
 # ✉️ Simplified Message Create Serializer
 class MessageCreateSerializer(serializers.ModelSerializer):
     sender    = serializers.ReadOnlyField(source="sender.email")
     recipient = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    listing   = serializers.PrimaryKeyRelatedField(queryset=CommunityPosting.objects.all())
+    # listing   = serializers.PrimaryKeyRelatedField(queryset=CommunityPosting.objects.all())
     content   = serializers.CharField()
 
     class Meta:
         model = Message
-        fields = ["id", "sender", "recipient", "listing", "content"]
-
+        fields = ["id", "sender", "recipient_username", "content"]
 
 # 🔐 User Profile Serializer
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -325,3 +353,30 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         fields = "__all__"
         read_only_fields = ["creator", "created_at"]
+
+
+class UserSerializer(serializers.ModelSerializer):
+    display_name = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = CommunityUser
+        fields = [
+            'id', 
+            'username', 
+            'email', 
+            'first_name', 
+            'last_name', 
+            'company_name', 
+            'display_as_company', 
+            'profile_picture',
+            'display_name'
+        ]
+    
+    def get_display_name(self, obj):
+        if obj.first_name and obj.last_name:
+            return f"{obj.first_name} {obj.last_name}"
+        elif obj.company_name and obj.display_as_company:
+            return obj.company_name
+        elif obj.email:
+            return obj.email
+        return obj.username

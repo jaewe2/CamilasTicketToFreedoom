@@ -21,6 +21,10 @@ from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import generics, permissions
+from rest_framework.exceptions import ValidationError
+from rest_framework import generics, permissions
+
 
 from .models import (
     CommunityPosting,
@@ -35,7 +39,10 @@ from .models import (
     Order,
     Event,
     Reminder,
-    Resource
+    Resource,
+    Message,
+    CommunityUser,
+
 )
 from .serializers import (
     CommunityPostingSerializer,
@@ -54,7 +61,9 @@ from .serializers import (
     CategoryValueSerializer,
     EventSerializer,
     ReminderSerializer,
-    ResourceSerializer
+    ResourceSerializer,
+    MessageSerializer,
+    UserSerializer,
 )
 
 User = get_user_model()
@@ -230,12 +239,13 @@ class ListingTagViewSet(viewsets.ModelViewSet):
 
 class MessageViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = MessageSerializer 
 
     def get_queryset(self):
         user = self.request.user
         return Message.objects.filter(
             Q(sender=user) | Q(recipient=user)
-        ).order_by("-created_at")
+        ).order_by("-timestamp")
 
     def get_serializer_class(self):
         return (
@@ -666,3 +676,38 @@ class ResourceViewSet(viewsets.ModelViewSet):
         ctx = super().get_serializer_context()
         ctx["request"] = self.request
         return ctx
+    
+# MessageViewSet
+class MessageListCreateView(generics.ListCreateAPIView):
+    serializer_class = MessageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        recipient_username = self.request.query_params.get('recipient')
+
+        if not recipient_username:
+            raise ValidationError({'recipient': 'You must specify a recipient username in the query params.'})
+
+        return Message.objects.filter(
+            sender=user, recipient__username=recipient_username
+        ) | Message.objects.filter(
+            sender__username=recipient_username, recipient=user
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(sender=self.request.user)
+
+# user list
+class UserListView(generics.ListAPIView):
+    queryset = CommunityUser.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+class UserDetailView(generics.RetrieveAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'username'
+    
+    def get_queryset(self):
+        return CommunityUser.objects.all()

@@ -137,26 +137,43 @@ class ListingTag(models.Model):
 
 # 💬 Messages
 class Message(models.Model):
-    listing = models.ForeignKey(CommunityPosting, on_delete=models.CASCADE, related_name="messages")
-    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_messages")
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='sent_messages',
+        on_delete=models.CASCADE
+    )
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
+        related_name='received_messages',
         on_delete=models.CASCADE,
-        related_name="received_messages",
         null=True,
-        blank=True,
+        blank=True  # Make recipient optional if needed
     )
+    # Only uncomment if listing is actually needed
+    # listing = models.ForeignKey(
+    #     CommunityPosting, 
+    #     on_delete=models.CASCADE, 
+    #     related_name="messages",
+    #     null=True,
+    #     blank=True
+    # )
     content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    parent_message = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies")
+    timestamp = models.DateTimeField(auto_now_add=True)
+    parent_message = models.ForeignKey(
+        "self", 
+        null=True, 
+        blank=True, 
+        on_delete=models.CASCADE, 
+        related_name="replies"
+    )
     read = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ["created_at"]
+        ordering = ['timestamp']
 
     def __str__(self):
         rec_email = self.recipient.email if self.recipient else "N/A"
-        return f"Message from {self.sender.email} to {rec_email} on {self.listing.title}"
+        return f"Message from {self.sender.email} to {rec_email}"
 
 
 # 🧾 Order
@@ -320,3 +337,6 @@ class Resource(models.Model):
 
     def __str__(self):
         return f"{self.title} by {self.owner}"
+    
+# Chat Feature
+
