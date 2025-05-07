@@ -1,0 +1,315 @@
+/* Make the app fill the browser window */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* include padding/border in size */
+  background: #fdeef3;
+  font-family: 'Inter', sans-serif;
+  color: #5a2a3b;
+}
+
+/* --- Layout wrapper: sidebar + main chat area --- */
+.chat-inbox-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden; /* no double scrollbars */
+}
+
+/* --- Sidebar --- */
+.sidebar {
+  background: #fff;
+  border-right: 1px solid #f0dce4;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0;
+  overflow-y: auto; /* vertical scroll only */
+  box-shadow: 2px 0 8px rgba(0,0,0,0.03);
+}
+.sidebar h2 {
+  margin: 0 1rem 0.5rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: #a06687; /* muted mauve */
+}
+
+/* Search box */
+.search-box {
+  display: flex;
+  align-items: center;
+  margin: 0 1rem 0.75rem;
+  padding: 0.5rem;
+  background: #f9e5ed;
+  border-radius: 8px;
+}
+.search-box .search-icon {
+  color: #a06687;
+  margin-right: 0.5rem;
+}
+.search-box input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.9rem;
+  color: #5a2a3b;
+}
+
+/* --- User list --- */
+.sidebar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  overflow-y: auto;
+}
+.sidebar li {
+  padding: 0.25rem 0;
+}
+.sidebar li button {
+  width: 100%;
+  background: none;
+  border: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  transition: background 0.2s, transform 0.1s;
+}
+.sidebar li button:hover {
+  background: #fbe4f0;
+  transform: translateX(2px);
+}
+.sidebar li.active button {
+  background: #e9bcd2;
+}
+
+/* --- Inbox threads --- */
+.thread {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s, transform 0.1s;
+}
+.thread:hover {
+  background: #fbe4f0;
+  transform: translateX(2px);
+}
+.thread.active {
+  background: #e9bcd2;
+}
+.thread .delete-thread-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9e1b32;
+  font-size: 1rem;
+  padding: 0.25rem;
+}
+
+/* --- Main chat container --- */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Placeholder when nothing is selected */
+.chat-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  font-size: 1rem;
+  color: #5a2a3b;
+  background: #fff;
+}
+
+/* Chat header (1:1 view) */
+.chat-container > h2 {
+  margin: 0;
+  padding: 1rem;
+  border-bottom: 1px solid #f0dce4;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #9e1b32; /* deep maroon */
+  text-align: center;
+  background: #fdeef3;
+}
+
+/* Threaded header with delete */
+.chat-header-with-delete {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #f0dce4;
+  background: #fdeef3;
+}
+.chat-header-with-delete h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 1.25rem;
+  text-align: center;
+}
+.delete-thread-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9e1b32;
+  padding: 0.25rem;
+  font-size: 1rem;
+}
+
+/* Messages scrolling area */
+.messages {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  background: #fff;
+  scrollbar-width: thin;
+  scrollbar-color: #e9bcd2 #f9e5ed;
+}
+.messages::-webkit-scrollbar {
+  width: 6px;
+}
+.messages::-webkit-scrollbar-thumb {
+  background-color: #e9bcd2;
+  border-radius: 3px;
+}
+.messages::-webkit-scrollbar-track {
+  background: #f9e5ed;
+}
+
+/* Individual message bubble */
+.messages > div {
+  display: flex;
+  align-items: center;
+  max-width: 70%;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 16px;
+  position: relative;
+  line-height: 1.4;
+  word-break: break-word;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* Sent messages (right side) */
+.sent {
+  margin-left: auto;
+  background: linear-gradient(135deg, #9e1b32, #c33c5a);
+  color: #fff;
+}
+.sent::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: inherit;
+  transform: rotate(45deg);
+  right: -6px;
+  bottom: 0;
+}
+
+/* Received messages (left side) */
+.received {
+  margin-right: auto;
+  background: #f7d3e0;
+  color: #5a2a3b;
+  border-bottom-left-radius: 4px;
+}
+.received::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: inherit;
+  transform: rotate(45deg);
+  left: -6px;
+  bottom: 0;
+}
+
+/* Delete-message button inside a bubble */
+.delete-msg-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.8);
+  margin-left: 0.5rem;
+  cursor: pointer;
+  align-self: flex-end;
+  font-size: 0.85rem;
+}
+.received .delete-msg-btn {
+  color: rgba(0,0,0,0.3);
+}
+
+/* Typing indicator */
+.typing-indicator {
+  padding: 0.5rem 1rem;
+  font-style: italic;
+  color: #777;
+  text-align: left;
+}
+
+/* --- Error alert --- */
+.error-alert {
+  margin: 0.5rem 1rem;
+  padding: 0.5rem 1rem;
+  background: #ffd7db;
+  color: #9e1b32;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+/* --- Input area --- */
+.input-row {
+  display: flex;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #f0dce4;
+  background: #f9e5ed;
+}
+.input-row input {
+  flex: 1;
+  border: 1px solid #e9bcd2;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  outline: none;
+}
+.input-row button {
+  margin-left: 0.5rem;
+  background: #9e1b32;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.input-row button:hover:not(:disabled) {
+  background: #c33c5a;
+}
+.input-row button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* --- Responsive: hide sidebar on narrow screens --- */
+@media (max-width: 768px) {
+  .chat-inbox-layout {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    display: none;
+  }
+}

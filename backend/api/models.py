@@ -145,35 +145,32 @@ class Message(models.Model):
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='received_messages',
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True  # Make recipient optional if needed
+        on_delete=models.CASCADE
     )
-    # Only uncomment if listing is actually needed
-    # listing = models.ForeignKey(
-    #     CommunityPosting, 
-    #     on_delete=models.CASCADE, 
-    #     related_name="messages",
-    #     null=True,
-    #     blank=True
-    # )
+    listing = models.ForeignKey(
+        CommunityPosting,
+        on_delete=models.CASCADE,
+        related_name='messages',
+        null=True,
+        blank=True,
+        help_text="Optional: group by listing"
+    )
     content = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     parent_message = models.ForeignKey(
-        "self", 
-        null=True, 
-        blank=True, 
-        on_delete=models.CASCADE, 
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
         related_name="replies"
     )
     read = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ['timestamp']
+        ordering = ['created_at']
 
     def __str__(self):
-        rec_email = self.recipient.email if self.recipient else "N/A"
-        return f"Message from {self.sender.email} to {rec_email}"
+        return f"{self.sender.username} → {self.recipient.username}: {self.content[:20]}"
 
 
 # 🧾 Order
@@ -218,7 +215,6 @@ class Order(models.Model):
 
 
 # ─── Notification Model ─────────────────────────────────────────────────────
-
 class Notification(models.Model):
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -258,7 +254,6 @@ def notify_on_message(sender, instance, created, **kwargs):
         target=instance
     )
 
-
 @receiver(post_save, sender=Order)
 def notify_on_order(sender, instance, created, **kwargs):
     if not created:
@@ -270,7 +265,6 @@ def notify_on_order(sender, instance, created, **kwargs):
         verb="purchased your listing",
         target=instance
     )
-
 
 # Events
 class Event(models.Model):
@@ -291,7 +285,7 @@ class Event(models.Model):
         return self.title
 
 
-# ▶︎ Assessment Reminder model
+# Assessment Reminder model
 class Reminder(models.Model):
     class Status(models.TextChoices):
         PENDING   = 'PENDING',   'Pending'
@@ -319,7 +313,7 @@ class Reminder(models.Model):
         return f"{self.title} ({self.status})"
 
 
-# 📚 Resource Sharing Model
+# Resource Sharing Model
 class Resource(models.Model):
     owner       = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -336,7 +330,4 @@ class Resource(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.title} by {self.owner}"
-    
-# Chat Feature
-
+        return f"{self.title} by {self.owner.username}"

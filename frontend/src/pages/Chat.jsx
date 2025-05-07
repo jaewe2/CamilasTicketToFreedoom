@@ -1,195 +1,336 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { auth } from '../firebase';
+import { FaTrash, FaSearch } from 'react-icons/fa';
+import './ChatInbox.css';
 
-const Chat = ({ token, currentUser }) => {
-  const { recipient } = useParams();
-  const navigate = useNavigate();
+export default function ChatInbox({ token, currentUser }) {
+  // Search & selection state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [users, setUsers] = useState([]);
+  const [selectedEmail, setSelectedEmail] = useState(null);
+  const [selectedUsername, setSelectedUsername] = useState(null);
+  const [selectedThread, setSelectedThread] = useState(null);
 
+  // Chat state
+  const [recipientInfo, setRecipientInfo] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [users, setUsers] = useState([]);
-  const [recipientInfo, setRecipientInfo] = useState(null);
+  const [theirTyping, setTheirTyping] = useState(false);
+
+  // Inbox threads
+  const [conversations, setConversations] = useState({});
+  const [replyText, setReplyText] = useState('');
+
+  // Refs for typing/websocket/scroll
+  const isTyping = useRef(false);
+  const typingTimeoutRef = useRef();
+  const wsRef = useRef();
+  const messagesEndRef = useRef();
+
+  // Error state
   const [error, setError] = useState(null);
 
-  // Load users if no recipient selected
+  // WebSocket: typing & new‐message events
   useEffect(() => {
-    if (!recipient) {
-      // Fixed API path to match backend URL configuration
-      axios.get('/api/users/', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then(res => {
-        setUsers(res.data);
-        setError(null);
-      })
-      .catch(err => {
-        console.error('Failed to load users:', err);
-        if (err.response && err.response.status === 403) {
-          setError('Authentication error. Please log in again.');
-        } else {
-          setError('Failed to load users. Please try again later.');
-        }
-      });
-    }
-  }, [recipient, token]);
+    if (!selectedUsername) return;
+    const ws = new WebSocket('wss://your-server.com/ws/chat/');
+    wsRef.current = ws;
+    ws.onmessage = e => {
+      const d = JSON.parse(e.data);
+      if (d.type === 'typing' && d.from === selectedUsername) {
+        setTheirTyping(true);
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = setTimeout(() => {
+          setTheirTyping(false);
+        }, 2000);
+      }
+      if (d.type === 'new_message' && d.from === selectedUsername) {
+        loadChatByEmail(selectedEmail);
+      }
+    };
+    return () => {
+      clearTimeout(typingTimeoutRef.current);
+      ws.close();
+    };
+  }, [selectedUsername, selectedEmail]);
 
-  // Load messages if a recipient is selected
+  // Initial load: users + inbox
   useEffect(() => {
-    if (recipient) {
-      // Fixed API path to match backend URL configuration
-      axios.get(`/api/users/${recipient}/`, {
+    loadUsers();
+    fetchInbox();
+    const iv = setInterval(() => {
+      if (!isTyping.current) fetchInbox();
+    }, 30000);
+    return () => clearInterval(iv);
+  }, [token]);
+
+  // Auto‐scroll
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, selectedThread, conversations]);
+
+  // Fetch users
+  const loadUsers = async () => {
+    try {
+      const res = await axios.get('/api/users/', {
         headers: { Authorization: `Bearer ${token}` }
-      })
-      .then(res => {
-        setRecipientInfo(res.data);
-        setError(null);
-        
-        // Also load messages for this recipient
-        return axios.get(`/api/messages/`, {
-          params: { recipient: recipient },
-          headers: { Authorization: `Bearer ${token}` }
+      });
+      setUsers(res.data);
+    } catch (err) {
+      handleError(err, 'Failed to load users.');
+    }
+  };
+
+  // Fetch inbox threads
+  const fetchInbox = async () => {
+    try {
+      const tok = await auth.currentUser.getIdToken();
+      const res = await fetch('/api/messages/inbox/', {
+        headers: { Authorization: `Bearer ${tok}` }
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      const grouped = {};
+      data.forEach(m => {
+        if (m.listing == null) return;
+        const lid = m.listing;
+        if (!grouped[lid]) grouped[lid] = { title: m.listing_title, messages: [] };
+        grouped[lid].messages.push({
+          ...m,
+          isOwn: m.sender_username === currentUser
         });
-      })
-      .then(res => {
-        if (res && res.data) {
-          setMessages(res.data);
-        }
-      })
-      .catch(err => {
-        console.error('Failed to load recipient info or messages:', err);
-        if (err.response && err.response.status === 403) {
-          setError('Authentication error. Please log in again.');
-        } else if (err.response && err.response.status === 404) {
-          setError(`User "${recipient}" not found.`);
-        } else {
-          setError('Failed to load conversation. Please try again later.');
-        }
       });
+      setConversations(grouped);
+    } catch {
+      setError('Could not load inbox');
     }
-  }, [recipient, token]);
+  };
 
+  // Error handler
+  const handleError = (err, fallback) => {
+    console.error(err);
+    setError(err?.response?.status === 403
+      ? 'Authentication error. Please log in again.'
+      : fallback);
+  };
+
+  // 1:1 chat by email
+  const loadChatByEmail = async email => {
+    try {
+      setSelectedThread(null);
+      setSelectedEmail(email);
+      const u = users.find(u => u.email === email);
+      if (!u) throw new Error('User not found');
+      setSelectedUsername(u.username);
+      setRecipientInfo(u);
+      const res = await axios.get('/api/messages/', {
+        params: { recipient: u.username },
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMessages(res.data);
+      setTheirTyping(false);
+    } catch (err) {
+      handleError(err, 'Failed to load conversation.');
+    }
+  };
+
+  // Send message
   const handleSend = async () => {
     if (!input.trim()) return;
-    
-    setError(null);
-  
     try {
-      // Fixed API path to match backend URL configuration
       const res = await axios.post('/api/messages/', {
-        recipient_username: recipient,
-        content: input,
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-  
-      setMessages([...messages, res.data]);
+        recipient_username: selectedUsername,
+        content: input
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      setMessages(prev => [...prev, res.data]);
       setInput('');
+      wsRef.current?.send(JSON.stringify({ type: 'new_message', to: selectedUsername }));
     } catch (err) {
-      if (err.response && err.response.status === 403) {
-        setError('Authentication error. Please log in again.');
-      } else if (err.response && err.response.status === 400) {
-        setError(err.response.data.recipient_username || 'Invalid recipient username.');
-      } else if (err.response && err.response.data) {
-        setError(`Error: ${JSON.stringify(err.response.data)}`);
-        console.error("Backend responded with:", err.response.data);
-        console.error("Status:", err.response.status);
-      } else {
-        setError('Failed to send message. Please try again later.');
-        console.error("Failed to send message:", err);
-      }
+      handleError(err, 'Failed to send message.');
     }
   };
 
-  // Display error message if there is one
-  const renderError = () => {
-    if (!error) return null;
-    
-    return (
-      <div style={{ 
-        padding: '0.5rem 1rem', 
-        backgroundColor: '#ffebee', 
-        color: '#c62828', 
-        borderRadius: '4px',
-        marginBottom: '1rem'
-      }}>
-        {error}
-      </div>
-    );
+  // Typing notify
+  const handleInputChange = e => {
+    setInput(e.target.value);
+    isTyping.current = true;
+    wsRef.current?.send(JSON.stringify({ type: 'typing', to: selectedUsername }));
   };
 
-  // Render user list if no recipient is selected
-  if (!recipient) {
-    return (
-      <div style={{ padding: '1rem' }}>
-        <h2>Select someone to chat with:</h2>
-        {renderError()}
+  // Delete single message
+  const deleteMessage = async id => {
+    if (!window.confirm('Delete this message?')) return;
+    try {
+      await axios.delete(`/api/messages/${id}/`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMessages(prev => prev.filter(m => m.id !== id));
+    } catch (err) {
+      handleError(err, 'Failed to delete message.');
+    }
+  };
+
+  // Select thread
+  const selectThread = lid => {
+    setSelectedEmail(null);
+    setSelectedUsername(null);
+    setSelectedThread(lid);
+  };
+
+  // Delete entire thread
+  const deleteThread = async lid => {
+    if (!window.confirm('Delete this conversation?')) return;
+    try {
+      const tok = await auth.currentUser.getIdToken();
+      const res = await fetch(`/api/messages/conversation/${lid}/`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${tok}` }
+      });
+      if (!res.ok) throw new Error();
+      setConversations(prev => {
+        const o = { ...prev };
+        delete o[lid];
+        return o;
+      });
+      setSelectedThread(null);
+    } catch {
+      handleError(null, 'Failed to delete conversation.');
+    }
+  };
+
+  // Reply in thread
+  const handleReply = async () => {
+    if (!replyText.trim()) return;
+    try {
+      const last = conversations[selectedThread].messages.slice(-1)[0];
+      await axios.post(
+        `/api/messages/${last.id}/reply/`,
+        { content: replyText },
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      setReplyText('');
+      fetchInbox();
+    } catch {
+      handleError(null, 'Reply failed.');
+    }
+  };
+
+  // Filter users
+  const filteredUsers = users.filter(u =>
+    u.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="chat-inbox-layout">
+
+      <aside className="sidebar">
+        <h2>Users</h2>
+        {error && <div className="error-alert">{error}</div>}
+
+        <div className="search-box">
+          <FaSearch className="search-icon"/>
+          <input
+            placeholder="Search users…"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
+        </div>
+
         <ul>
-          {users.map(user => (
-            <li key={user.id} style={{ marginBottom: '0.5rem' }}>
-              <button onClick={() => navigate(`/chat/${user.username}`)}>
-                {user.first_name && user.last_name 
-                  ? `${user.first_name} ${user.last_name}` 
-                  : user.company_name && user.display_as_company 
-                    ? user.company_name 
-                    : user.email || user.username}
+          {filteredUsers.map(u => (
+            <li key={u.id} className={u.email===selectedEmail?'active':''}>
+              <button onClick={()=>loadChatByEmail(u.email)}>
+                {u.first_name ? `${u.first_name} ${u.last_name}` : u.email}
               </button>
             </li>
           ))}
         </ul>
-      </div>
-    );
-  }
 
-  // Render chat UI
-  return (
-    <div className="chat-container" style={{ maxWidth: 600, margin: 'auto' }}>
-      <h2>Chat with {recipientInfo ? recipientInfo.display_name || recipient : recipient}</h2>
-      {renderError()}
-
-      <div className="messages" style={{ height: 300, overflowY: 'scroll', border: '1px solid #ccc', padding: '1rem' }}>
-        {messages.map((msg) => (
-          <div key={msg.id} style={{ 
-            textAlign: msg.sender_username === currentUser ? 'right' : 'left',
-            marginBottom: '0.5rem',
-            padding: '0.5rem',
-            backgroundColor: msg.sender_username === currentUser ? '#e3f2fd' : '#f5f5f5',
-            borderRadius: '8px'
-          }}>
-            <strong>
-              {msg.sender_first_name && msg.sender_last_name 
-                ? `${msg.sender_first_name} ${msg.sender_last_name}` 
-                : msg.sender_company_name && msg.sender_display_as_company 
-                  ? msg.sender_company_name 
-                  : msg.sender_email || msg.sender_username}
-            </strong>: {msg.content}
+        <h2>Inbox Threads</h2>
+        {Object.entries(conversations).map(([lid,{title}])=>(
+          <div key={lid} className={`thread ${lid===selectedThread?'active':''}`}>
+            <span onClick={()=>selectThread(lid)}>{title}</span>
+            <button
+              className="delete-thread-btn"
+              onClick={()=>deleteThread(lid)}
+              title="Delete conversation"
+            ><FaTrash/></button>
           </div>
         ))}
-        {messages.length === 0 && (
-          <div style={{ textAlign: 'center', color: '#757575', marginTop: '2rem' }}>
-            No messages yet. Start the conversation!
-          </div>
-        )}
-      </div>
+      </aside>
 
-      <div style={{ marginTop: '1rem' }}>
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-          placeholder="Type a message..."
-          style={{ width: '80%', padding: '0.5rem' }}
-        />
-        <button 
-          onClick={handleSend} 
-          style={{ padding: '0.5rem', marginLeft: '0.5rem' }}
-          disabled={!input.trim()}
-        >
-          Send
-        </button>
-      </div>
+      <main className="chat-container">
+        {!selectedEmail && !selectedThread ? (
+          <div className="chat-placeholder">
+            <p>Select a user to start a conversation.</p>
+          </div>
+        ) : selectedEmail ? (
+          <>
+            <h2>Chat with {recipientInfo?.display_name||selectedEmail}</h2>
+            <div className="messages">
+              {messages.map(m=>(
+                <div key={m.id} className={m.sender_username===currentUser?'sent':'received'}>
+                  <span className="bubble-text">
+                    <strong>{m.sender_display_name||m.sender_username}</strong>: {m.content}
+                  </span>
+                  {m.sender_username===currentUser && (
+                    <button
+                      className="delete-msg-btn"
+                      onClick={()=>deleteMessage(m.id)}
+                    ><FaTrash size="0.8em"/></button>
+                  )}
+                </div>
+              ))}
+              {theirTyping && (
+                <div className="typing-indicator">
+                  {recipientInfo?.display_name||selectedEmail} is typing…
+                </div>
+              )}
+              <div ref={messagesEndRef}/>
+            </div>
+            <div className="input-row">
+              <input
+                value={input}
+                onChange={handleInputChange}
+                onKeyPress={e=>e.key==='Enter'&&handleSend()}
+                placeholder="Type a message…"
+              />
+              <button onClick={handleSend} disabled={!input.trim()}>
+                Send
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="chat-header-with-delete">
+              <h2>Thread: {conversations[selectedThread].title}</h2>
+              <button
+                className="delete-thread-btn"
+                onClick={()=>deleteThread(selectedThread)}
+              ><FaTrash/></button>
+            </div>
+            <div className="messages">
+              {conversations[selectedThread].messages.map(m=>(
+                <div key={m.id} className={m.isOwn?'sent':'received'}>
+                  <strong>{m.isOwn?'You':m.sender}</strong>: {m.content}
+                </div>
+              ))}
+              <div ref={messagesEndRef}/>
+            </div>
+            <div className="input-row">
+              <input
+                value={replyText}
+                onChange={e=>setReplyText(e.target.value)}
+                placeholder="Type your reply…"
+              />
+              <button onClick={handleReply} disabled={!replyText.trim()}>
+                Reply
+              </button>
+            </div>
+          </>
+        )}
+      </main>
     </div>
   );
-};
-
-export default Chat;
+}

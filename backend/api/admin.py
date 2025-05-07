@@ -78,8 +78,8 @@ class ListingTagAdmin(admin.ModelAdmin):
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'sender', 'recipient', 'content', 'timestamp')
-    list_filter = ('sender', 'recipient', 'timestamp')
+    list_display = ('id', 'sender', 'recipient', 'content', 'created_at')
+    list_filter = ('sender', 'recipient', 'created_at')
     search_fields = ('sender__username', 'recipient__username', 'content')
 
 
@@ -89,3 +89,4 @@ class OrderAdmin(admin.ModelAdmin):
     list_filter = ("status", "created_at", "payment_method")
     search_fields = ("buyer__email", "listing__title", "payment_method__name")
     readonly_fields = ("total_price", "created_at", "paid_at", "address_details")
+

@@ -16,7 +16,6 @@ from .models import (
     Event,
     Reminder,
     Resource,
-    Message,
     CommunityUser,
 )
 
@@ -76,43 +75,23 @@ class CommunityPostingSerializer(serializers.ModelSerializer):
     images              = PostingImageSerializer(many=True, read_only=True)
     tags                = ListingTagSerializer(many=True, read_only=True)
     favorited_by        = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-
     payment_methods     = PaymentMethodSerializer(many=True, read_only=True)
     payment_methods_ids = serializers.PrimaryKeyRelatedField(
-        many=True,
-        write_only=True,
-        queryset=PaymentMethod.objects.all(),
-        source="payment_methods"
+        many=True, write_only=True, queryset=PaymentMethod.objects.all(), source="payment_methods"
     )
-
     offerings           = OfferingSerializer(many=True, read_only=True)
     offerings_ids       = serializers.PrimaryKeyRelatedField(
-        many=True,
-        write_only=True,
-        queryset=Offering.objects.all(),
-        source="offerings"
+        many=True, write_only=True, queryset=Offering.objects.all(), source="offerings"
     )
 
     class Meta:
         model = CommunityPosting
         fields = [
-            "id",
-            "user",
-            "user_id",
-            "title",
-            "description",
-            "category",
-            "category_name",
-            "price",
-            "location",
-            "created_at",
-            "images",
-            "tags",
-            "favorited_by",
-            "payment_methods",
-            "payment_methods_ids",
-            "offerings",
-            "offerings_ids",
+            "id", "user", "user_id", "title", "description",
+            "category", "category_name", "price", "location",
+            "created_at", "images", "tags", "favorited_by",
+            "payment_methods", "payment_methods_ids",
+            "offerings", "offerings_ids",
         ]
 
 
@@ -130,15 +109,17 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 # 💬 Full Message Serializer
 class MessageSerializer(serializers.ModelSerializer):
-    sender = serializers.ReadOnlyField(source="sender.email")
-    sender_username = serializers.ReadOnlyField(source="sender.username")
-    sender_first_name = serializers.ReadOnlyField(source="sender.first_name")
-    sender_last_name = serializers.ReadOnlyField(source="sender.last_name")
-    sender_company_name = serializers.ReadOnlyField(source="sender.company_name")
+    sender                    = serializers.ReadOnlyField(source="sender.email")
+    sender_username           = serializers.ReadOnlyField(source="sender.username")
+    sender_first_name         = serializers.ReadOnlyField(source="sender.first_name")
+    sender_last_name          = serializers.ReadOnlyField(source="sender.last_name")
+    sender_company_name       = serializers.ReadOnlyField(source="sender.company_name")
     sender_display_as_company = serializers.ReadOnlyField(source="sender.display_as_company")
-    sender_display_name = serializers.SerializerMethodField()
-    recipient_username = serializers.CharField(write_only=True)
-    
+    sender_display_name       = serializers.SerializerMethodField()
+    recipient                 = serializers.ReadOnlyField(source="recipient.username")
+    listing                   = serializers.PrimaryKeyRelatedField(read_only=True)
+    parent_message            = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = Message
         fields = [
@@ -150,47 +131,57 @@ class MessageSerializer(serializers.ModelSerializer):
             "sender_company_name",
             "sender_display_as_company",
             "sender_display_name",
-            "recipient_username",
+            "recipient",
+            "listing",
             "content",
-            "timestamp",
+            "created_at",
             "parent_message",
             "read",
         ]
-        read_only_fields = ["sender", "timestamp"]
+        read_only_fields = ["sender", "created_at", "read"]
+
     def get_sender_display_name(self, obj):
         if obj.sender.first_name and obj.sender.last_name:
             return f"{obj.sender.first_name} {obj.sender.last_name}"
-        elif obj.sender.company_name and obj.sender.display_as_company:
+        if obj.sender.company_name and obj.sender.display_as_company:
             return obj.sender.company_name
-        elif obj.sender.email:
-            return obj.sender.email
-        return obj.sender.username
-        
+        return obj.sender.email or obj.sender.username
+
+
+# ✉️ Message Create Serializer
+class MessageCreateSerializer(serializers.ModelSerializer):
+    recipient_username = serializers.CharField(write_only=True)
+    listing             = serializers.PrimaryKeyRelatedField(
+                              queryset=CommunityPosting.objects.all(),
+                              required=False, allow_null=True
+                          )
+    parent_message      = serializers.PrimaryKeyRelatedField(
+                              queryset=Message.objects.all(),
+                              required=False, allow_null=True
+                          )
+
+    class Meta:
+        model = Message
+        fields = ["id", "recipient_username", "listing", "parent_message", "content"]
+
     def create(self, validated_data):
-        recipient_username = validated_data.pop('recipient_username')
+        # drop any stray sender key
+        validated_data.pop("sender", None)
+        username = validated_data.pop("recipient_username")
         try:
-            recipient = CommunityUser.objects.get(username=recipient_username)
+            recipient = CommunityUser.objects.get(username=username)
         except CommunityUser.DoesNotExist:
             raise serializers.ValidationError({
-                "recipient_username": f"User with username '{recipient_username}' does not exist."
+                "recipient_username": f"User '{username}' not found."
             })
-        
+
+        # explicitly set sender from request
         return Message.objects.create(
+            sender=self.context["request"].user,
             recipient=recipient,
             **validated_data
         )
 
-
-# ✉️ Simplified Message Create Serializer
-class MessageCreateSerializer(serializers.ModelSerializer):
-    sender    = serializers.ReadOnlyField(source="sender.email")
-    recipient = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    # listing   = serializers.PrimaryKeyRelatedField(queryset=CommunityPosting.objects.all())
-    content   = serializers.CharField()
-
-    class Meta:
-        model = Message
-        fields = ["id", "sender", "recipient_username", "content"]
 
 # 🔐 User Profile Serializer
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -199,21 +190,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "id",
-            "email",
-            "username",
-            "first_name",
-            "last_name",
-            "profile_picture",
-            "about",
-            "interests",
-            "graduation_date",
-            "company_name",
-            "display_as_company",
-            "phone_number",
-            "is_buyer",
-            "is_seller",
-            "is_admin",
+            "id", "email", "username", "first_name", "last_name",
+            "profile_picture", "about", "interests", "graduation_date",
+            "company_name", "display_as_company", "phone_number",
+            "is_buyer", "is_seller", "is_admin",
         ]
         read_only_fields = ["email", "username", "is_buyer", "is_seller", "is_admin"]
 
@@ -228,9 +208,7 @@ class ReminderSerializer(serializers.ModelSerializer):
 
 # 🗂 Resource Serializer
 class ResourceSerializer(serializers.ModelSerializer):
-    # accept any uploaded file on create/update
     file     = serializers.FileField(write_only=True)
-    # expose its absolute URL when reading
     file_url = serializers.SerializerMethodField()
 
     class Meta:
@@ -240,12 +218,10 @@ class ResourceSerializer(serializers.ModelSerializer):
 
     def get_file_url(self, obj):
         request = self.context.get("request")
-        if obj.file and request:
-            return request.build_absolute_uri(obj.file.url)
-        return None
+        return request.build_absolute_uri(obj.file.url) if obj.file and request else None
 
 
-# 🧾 Order Serializer (with listing/payment + shipping + seller)
+# 🧾 Order Serializer
 class OrderSerializer(serializers.ModelSerializer):
     buyer                   = serializers.ReadOnlyField(source="buyer.id")
     buyer_email             = serializers.ReadOnlyField(source="buyer.email")
@@ -255,53 +231,42 @@ class OrderSerializer(serializers.ModelSerializer):
     payment_method          = serializers.PrimaryKeyRelatedField(queryset=PaymentMethod.objects.all())
     payment_method_name     = serializers.CharField(source="payment_method.name", read_only=True)
     payment_method_icon     = serializers.CharField(source="payment_method.icon", read_only=True)
-    offerings               = serializers.PrimaryKeyRelatedField(many=True, queryset=Offering.objects.all(), required=False)
+    offerings               = serializers.PrimaryKeyRelatedField(
+                                 many=True, queryset=Offering.objects.all(), required=False
+                             )
     total_price             = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     address_details         = serializers.JSONField(required=False)
-    stripe_payment_intent_id = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     class Meta:
         model = Order
         fields = [
-            "id",
-            "buyer",
-            "buyer_email",
-            "listing",
-            "listing_title",
-            "seller_email",
-            "payment_method",
-            "payment_method_name",
-            "payment_method_icon",
-            "stripe_payment_intent_id",
-            "offerings",
-            "total_price",
-            "status",
-            "created_at",
-            "paid_at",
-            "address_details",
+            "id", "buyer", "buyer_email", "listing", "listing_title",
+            "seller_email", "payment_method", "payment_method_name",
+            "payment_method_icon", "offerings", "total_price", "status",
+            "created_at", "paid_at", "address_details",
         ]
         read_only_fields = ["status", "created_at", "paid_at"]
 
     def validate(self, data):
-        listing_price   = data["listing"].price or 0
-        offerings_total = sum(o.extra_cost for o in data.get("offerings", []))
-        data["total_price"] = listing_price + offerings_total
+        price  = data["listing"].price or 0
+        extras = sum(o.extra_cost for o in data.get("offerings", []))
+        data["total_price"] = price + extras
         return data
 
     def create(self, validated_data):
-        offerings = validated_data.pop("offerings", [])
-        order     = Order.objects.create(**validated_data)
-        order.offerings.set(offerings)
+        offers = validated_data.pop("offerings", [])
+        order  = Order.objects.create(**validated_data)
+        order.offerings.set(offers)
         return order
 
 
 # ─── Analytics Serializers ───────────────────────────────────────────────────
 
 class OverviewSerializer(serializers.Serializer):
-    postsThisMonth  = serializers.IntegerField()
-    totalPosts      = serializers.IntegerField()
-    salesThisMonth  = serializers.IntegerField()
-    totalSales      = serializers.IntegerField()
+    postsThisMonth = serializers.IntegerField()
+    totalPosts     = serializers.IntegerField()
+    salesThisMonth = serializers.IntegerField()
+    totalSales     = serializers.IntegerField()
 
 
 class MonthCountSerializer(serializers.Serializer):
@@ -318,7 +283,7 @@ class CategoryValueSerializer(serializers.Serializer):
     value    = serializers.IntegerField()
 
 
-# ─── Notifications Serializer ────────────────────────────────────────────────
+# 🔔 Notification Serializer
 
 class NotificationSerializer(serializers.ModelSerializer):
     actor       = serializers.ReadOnlyField(source="actor.email")
@@ -331,13 +296,8 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = [
-            "id",
-            "actor",
-            "verb",
-            "target_type",
-            "target_id",
-            "unread",
-            "timestamp",
+            "id", "actor", "verb", "target_type",
+            "target_id", "unread", "timestamp",
         ]
 
     def get_target_type(self, obj):
@@ -355,28 +315,23 @@ class EventSerializer(serializers.ModelSerializer):
         read_only_fields = ["creator", "created_at"]
 
 
+# 👤 Community User Serializer
+
 class UserSerializer(serializers.ModelSerializer):
     display_name = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = CommunityUser
         fields = [
-            'id', 
-            'username', 
-            'email', 
-            'first_name', 
-            'last_name', 
-            'company_name', 
-            'display_as_company', 
-            'profile_picture',
-            'display_name'
+            'id', 'username', 'email', 'first_name',
+            'last_name', 'company_name', 'display_as_company',
+            'profile_picture', 'display_name'
         ]
-    
+
     def get_display_name(self, obj):
         if obj.first_name and obj.last_name:
             return f"{obj.first_name} {obj.last_name}"
-        elif obj.company_name and obj.display_as_company:
+        if obj.company_name and obj.display_as_company:
             return obj.company_name
-        elif obj.email:
-            return obj.email
-        return obj.username
+        return obj.email or obj.username
+

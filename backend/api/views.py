@@ -14,16 +14,14 @@ import requests
 from firebase_admin import auth as firebase_auth
 import api.firebase_admin_setup
 
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, generics
 from rest_framework.decorators import action
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, ListCreateAPIView, ListAPIView
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import generics, permissions
 from rest_framework.exceptions import ValidationError
-from rest_framework import generics, permissions
 
 
 from .models import (
@@ -238,21 +236,15 @@ class ListingTagViewSet(viewsets.ModelViewSet):
 
 
 class MessageViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = MessageSerializer 
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        return Message.objects.filter(
-            Q(sender=user) | Q(recipient=user)
-        ).order_by("-timestamp")
+        return Message.objects.filter(Q(sender=user) | Q(recipient=user)) \
+                              .order_by("created_at")
 
     def get_serializer_class(self):
-        return (
-            MessageCreateSerializer
-            if self.action == "create"
-            else MessageSerializer
-        )
+        return MessageCreateSerializer if self.action == "create" else MessageSerializer
 
     def perform_create(self, serializer):
         serializer.save(sender=self.request.user)
@@ -260,52 +252,31 @@ class MessageViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"], url_path="inbox")
     def inbox(self, request):
         msgs = self.get_queryset()
-        serializer = self.get_serializer(msgs, many=True)
-        return Response(serializer.data)
+        return Response(self.get_serializer(msgs, many=True).data)
 
-    @action(detail=False, methods=["post"], url_path="send")
-    def send_message(self, request):
-        sender = request.user
-        recipient_id = request.data.get("recipient_id")
-        content = request.data.get("content")
-        listing_id = request.data.get("listing_id")
-
-        if not (recipient_id and content and listing_id):
-            return Response(
-                {"error": "recipient_id, content & listing_id are required."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        try:
-            listing = CommunityPosting.objects.get(id=listing_id)
-            recipient = User.objects.get(id=recipient_id)
-        except (CommunityPosting.DoesNotExist, User.DoesNotExist):
-            return Response({"error": "Invalid listing or recipient."}, status=status.HTTP_400_BAD_REQUEST)
-
-        if listing.user == sender:
-            return Response({"error": "Cannot message your own listing."}, status=status.HTTP_403_FORBIDDEN)
-
-        msg = Message.objects.create(
-            sender=sender,
-            recipient=recipient,
-            content=content,
-            listing=listing
-        )
-        return Response(MessageSerializer(msg).data, status=status.HTTP_201_CREATED)
+    @action(detail=False, methods=["post"], url_path="mark-read")
+    def mark_read(self, request):
+        ids = request.data.get("ids", [])
+        marked = Message.objects.filter(recipient=request.user, id__in=ids).update(read=True)
+        return Response({"marked": marked})
 
     @action(detail=True, methods=["post"], url_path="reply")
     def reply(self, request, pk=None):
-        orig = self.get_object()
-        content = request.data.get("content")
+        original = self.get_object()
+        content = request.data.get("content", "").strip()
         if not content:
-            return Response({"error": "Content required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Content required."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        target = original.sender if original.sender != request.user else original.recipient
         reply = Message.objects.create(
-            listing=orig.listing,
+            listing=original.listing,
             sender=request.user,
-            recipient=orig.sender,
-            content=content
+            recipient=target,
+            content=content,
+            parent_message=original
         )
-        return Response(MessageSerializer(reply).data, status=status.HTTP_201_CREATED)
+        return Response(MessageSerializer(reply).data,
+                        status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"], url_path="toggle-read")
     def toggle_read(self, request, pk=None):
@@ -316,28 +287,14 @@ class MessageViewSet(viewsets.ModelViewSet):
         msg.save(update_fields=["read"])
         return Response({"id": msg.id, "read": msg.read})
 
-    @action(detail=False, methods=["post"], url_path="mark-read")
-    def mark_read(self, request):
-        ids = request.data.get("ids", [])
-        marked = Message.objects.filter(recipient=request.user, id__in=ids).update(read=True)
-        return Response({"marked": marked})
-
-    @action(
-        detail=False,
-        methods=["delete"],
-        url_path=r"conversation/(?P<listing_id>\d+)",
-        permission_classes=[IsAuthenticated],
-    )
+    @action(detail=False, methods=["delete"], url_path=r"conversation/(?P<listing_id>\d+)")
     def delete_conversation(self, request, listing_id=None):
         user = request.user
-        qs = Message.objects.filter(listing_id=listing_id).filter(
-            Q(sender=user) | Q(recipient=user)
-        )
+        qs = Message.objects.filter(listing_id=listing_id) \
+                            .filter(Q(sender=user) | Q(recipient=user))
         count, _ = qs.delete()
-        return Response(
-            {"deleted": count},
-            status=status.HTTP_204_NO_CONTENT if count else status.HTTP_404_NOT_FOUND
-        )
+        code = status.HTTP_204_NO_CONTENT if count else status.HTTP_404_NOT_FOUND
+        return Response({"deleted": count}, status=code)
 
 
 class UserProfileView(APIView):
@@ -623,7 +580,7 @@ class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all().order_by('-created_at')
     serializer_class = EventSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    parser_classes = [MultiPartParser, FormParser]      
+    parser_classes = [MultiPartParser, FormParser]
 
     def perform_create(self, serializer):
         serializer.save(creator=self.request.user)
@@ -678,36 +635,40 @@ class ResourceViewSet(viewsets.ModelViewSet):
         return ctx
     
 # MessageViewSet
-class MessageListCreateView(generics.ListCreateAPIView):
+class MessageListCreateView(ListCreateAPIView):
+    """
+    GET  /api/messages/?recipient={username}
+    POST /api/messages/?recipient={username}
+    """
     serializer_class = MessageSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        recipient_username = self.request.query_params.get('recipient')
-
-        if not recipient_username:
-            raise ValidationError({'recipient': 'You must specify a recipient username in the query params.'})
-
+        recipient = self.request.query_params.get("recipient")
+        if not recipient:
+            raise ValidationError({"recipient": "Query param required"})
         return Message.objects.filter(
-            sender=user, recipient__username=recipient_username
-        ) | Message.objects.filter(
-            sender__username=recipient_username, recipient=user
-        )
+            Q(sender=user, recipient__username=recipient) |
+            Q(sender__username=recipient, recipient=user)
+        ).order_by("created_at")
 
     def perform_create(self, serializer):
         serializer.save(sender=self.request.user)
 
-# user list
-class UserListView(generics.ListAPIView):
+class UserListView(ListAPIView):
+    """
+    GET /api/users/
+    """
     queryset = CommunityUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
-class UserDetailView(generics.RetrieveAPIView):
+class UserDetailView(RetrieveAPIView):
+    """
+    GET /api/users/{username}/
+    """
+    queryset = CommunityUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
-    lookup_field = 'username'
-    
-    def get_queryset(self):
-        return CommunityUser.objects.all()
+    lookup_field = "username"
