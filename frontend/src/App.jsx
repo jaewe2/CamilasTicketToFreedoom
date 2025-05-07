@@ -10,41 +10,26 @@ import AISummarizer from "./pages/AISummarizer";
 import AssessmentReminders from "./pages/AssessmentReminders";
 import Login from "./Auth/Login";
 import Register from "./Auth/Register";
-import Dashboard from "./pages/Dashboard";
-import Analytics from "./pages/Analytics";
-import PostAdPage from "./pages/PostAdPage";
-import MyAdsPage from "./pages/MyAdsPage";
-import MyMessages from "./MyMessages";
-import SettingsPage from "./pages/SettingsPage";
 import Profile from "./pages/Profile";
-import CheckoutPage from "./pages/CheckoutPage";
-import OrderConfirmation from "./OrderConfirmation";
-import StripeSuccessPage from "./StripeSuccessPage";
-import PrivateRoute from "./PrivateRoute";
-import Navbar from "./Navbar";
-import Notifications from "./components/Notifications";
+import Home from "./pages/Home";
 import Community from "./pages/Community";
 import Events from "./pages/Events";
 import Features from "./pages/Features";
 import Resources from "./pages/Resources";
-import Home from "./pages/Home";
 import AddEventForm from "./components/AddEventForm";
-import ListingsPage from "./Listings/ListingsPage";
-import ListingDetail from "./Listings/ListingDetail";
-import EditListing from "./Listings/EditListing";
-import Favorites from "./Listings/Favorites";
-import SalesPage from "./pages/SalesPage";
-import OrdersPage from "./pages/OrdersPage";
+import Notifications from "./components/Notifications";
+import Chat from "./pages/Chat";
+
+import PrivateRoute from "./PrivateRoute";
+import Navbar from "./Navbar";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import Chat from "./pages/Chat";
-
 const stripePromise = loadStripe("pk_test_YourPublishableKeyHere");
 
 export default function App() {
-  const token = localStorage.getItem("token"); // or from context
+  const token = localStorage.getItem("token");
   const currentUser = localStorage.getItem("username");
 
   return (
@@ -54,14 +39,11 @@ export default function App() {
         <ToastContainer position="top-right" autoClose={3000} />
 
         <Routes>
+          {/* Auth */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/listings" element={<ListingsPage />} />
-          <Route path="/listing-detail/:id" element={<ListingDetail />} />
-          <Route
-            path="/order-confirmation/success"
-            element={<StripeSuccessPage />}
-          />
+
+          {/* Public pages */}
           <Route path="/" element={<Home />} />
           <Route path="/ai-summarizer" element={<AISummarizer />} />
           <Route path="/community" element={<Community />} />
@@ -69,6 +51,8 @@ export default function App() {
           <Route path="/features" element={<Features />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/reminders" element={<AssessmentReminders />} />
+
+          {/* Protected */}
           <Route
             path="/profile"
             element={
@@ -77,31 +61,20 @@ export default function App() {
               </PrivateRoute>
             }
           />
-          <Route path="/messages" element={<MyMessages />} />
           <Route
-            path="/chat"
-            element={<Chat token={token} currentUser={currentUser} />}
-          />
-          <Route
-            path="/chat/:recipient"
-            element={<Chat token={token} currentUser={currentUser} />}
-          />
-          <Route
-            path="/dashboard"
+            path="/notifications"
             element={
               <PrivateRoute>
-                <Dashboard />
+                <Notifications />
               </PrivateRoute>
             }
           />
-          <Route
-            path="/analytics"
-            element={
-              <PrivateRoute>
-                <Analytics />
-              </PrivateRoute>
-            }
-          />
+
+          {/* Chat */}
+          <Route path="/chat" element={<Chat token={token} currentUser={currentUser} />} />
+          <Route path="/chat/:recipient" element={<Chat token={token} currentUser={currentUser} />} />
+
+          {/* Event CRUD */}
           <Route
             path="/events/new"
             element={
@@ -126,87 +99,9 @@ export default function App() {
               </PrivateRoute>
             }
           />
-          <Route
-            path="/notifications"
-            element={
-              <PrivateRoute>
-                <Notifications />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/sales"
-            element={
-              <PrivateRoute>
-                <SalesPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/orders"
-            element={
-              <PrivateRoute>
-                <OrdersPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/post"
-            element={
-              <PrivateRoute>
-                <PostAdPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/my-ads"
-            element={
-              <PrivateRoute>
-                <MyAdsPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/favorites"
-            element={
-              <PrivateRoute>
-                <Favorites />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <PrivateRoute>
-                <SettingsPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/edit-listing/:id"
-            element={
-              <PrivateRoute>
-                <EditListing />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/checkout/:id"
-            element={
-              <PrivateRoute>
-                <CheckoutPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/order-confirmation/:id"
-            element={
-              <PrivateRoute>
-                <OrderConfirmation />
-              </PrivateRoute>
-            }
-          />
-          <Route path="*" element={<ListingsPage />} />
+
+          {/* Fallback to home */}
+          <Route path="*" element={<Home />} />
         </Routes>
       </Router>
     </Elements>
